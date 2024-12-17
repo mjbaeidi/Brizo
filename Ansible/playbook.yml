@@ -1,7 +1,7 @@
 ---
 - name: Install Docker on all hosts
   hosts: all
-  become: yes  # Run tasks as root
+  become: true  # Run tasks as root
 
   tasks:
     - name: Install required packages
