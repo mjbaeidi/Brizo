@@ -6,5 +6,6 @@ localhost ansible_connection=local
 
 # Remote SSH servers
 [remote]
-192.168.56.12 ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+10.192.127.237 ansible_ssh_user=ok ansible_ssh_pass=Xx654321
+10.192.127.239 ansible_ssh_user=ok ansible_ssh_pass=Xx654321
 
