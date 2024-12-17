@@ -6,6 +6,6 @@ localhost ansible_connection=local
 
 # Remote SSH servers
 [remote]
-10.192.127.237 ansible_ssh_user=ok ansible_ssh_pass=Xx654321
-10.192.127.239 ansible_ssh_user=ok ansible_ssh_pass=Xx654321
+10.192.127.237 ansible_user=ok ansible_become_pass=Xx654321
+10.192.127.239 ansible_user=ok ansible_become_pass=Xx654321
 
