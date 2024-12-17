@@ -1,0 +1,63 @@
+---
+- name: Install Docker on all hosts
+  hosts: all
+  become: yes  # Run tasks as root
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Create /etc/apt/keyrings directory if not exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker's official GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+      register: download_result  # Register the result of the get_url module to a variable
+      until: download_result is succeeded  # Condition to check for a successful download
+      retries: 5  # Number of retries
+      delay: 3  # Delay in seconds between retries
+
+    - name: Determine the architecture with dpkg
+      ansible.builtin.shell:
+        cmd: dpkg --print-architecture
+      register: dpkg_architecture
+
+    - name: Add Docker repository
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list.d/docker.list
+        line: "deb [arch={{ dpkg_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable"
+        create: yes
+
+    - name: Update apt cache after adding Docker repository
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: latest
+
+    - name: Ensure Docker is started and enabled on boot
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+        state: started

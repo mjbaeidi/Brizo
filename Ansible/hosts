@@ -1,0 +1,10 @@
+# Inventory file for Ansible
+
+# Localhost
+[local]
+localhost ansible_connection=local
+
+# Remote SSH servers
+[remote]
+192.168.56.12 ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+
