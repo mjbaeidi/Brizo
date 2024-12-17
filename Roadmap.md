@@ -2,13 +2,14 @@
 
 1. - [ ] Upgrade Docker using Ansible
 2. - [ ] Install k8s
-3. - [ ] Install Gitlab Server
+3. - [ ] Back-end Storage k8s
+4. - [ ] Install Gitlab Server
      > full install with Local Agent using Docker
-4. - [ ] Prepare python API code with Docker file & Image
-5. - [ ] write k8s Manifests
-6. - [ ] Use Ingress
-7. - [ ] Install Image Repository
-8. - [ ] Design Gitlab PipeLine
+5. - [ ] Prepare python API code with Docker file & Image
+6. - [ ] write k8s Manifests
+7. - [ ] Use Ingress
+8. - [ ] Install Image Repository
+9. - [ ] Design Gitlab PipeLine
      > 1. Pull
      > 2. Test
      > 3. Build
@@ -16,8 +17,8 @@
      > 5. Push
      > 6. Deploy (Test)
      > 7. Deploy (Production)
-9. - [ ] Install ArgoCD
-10. - [ ] Integrate Different Parts
-11. - [ ] monitoring
-12. - [ ] Install Rancher or better Dashboard
+10. - [ ] Install ArgoCD
+11. - [ ] Integrate Different Parts
+12. - [ ] monitoring
+13. - [ ] Install Rancher or better Dashboard
 
