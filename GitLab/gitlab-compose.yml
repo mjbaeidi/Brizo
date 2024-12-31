@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   gitlab:
-    image: gitlab/gitlab-ce:17.7.0-ce.0
+    image: registry.okcs.com/containers/gitlab/gitlab-ce:17.7.0-ce.0
     container_name: gitlab
     restart: always
     hostname: 'gitlab.brizo.me'
@@ -12,7 +12,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - '22:22'
+      - '2424:22'
     volumes:
       - '$GITLAB_HOME/config:/etc/gitlab'
       - '$GITLAB_HOME/logs:/var/log/gitlab'
