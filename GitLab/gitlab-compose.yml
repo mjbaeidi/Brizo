@@ -9,6 +9,7 @@ services:
       GITLAB_OMNIBUS_CONFIG: |
         # Add any other gitlab.rb configuration here, each on its own line
         external_url 'https://gitlab.brizo.me'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2424
         letsencrypt['enable'] = false
     ports:
       - '80:80'
