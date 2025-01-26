@@ -3,14 +3,15 @@
 1. - [X] Upgrade Docker using Ansible
 2. - [ ] Install k8s
 3. - [ ] Back-end Storage k8s
-4. - [ ] Install Gitlab Server
+4. - [X] Install FreeIPA
+5. - [ ] Install Gitlab Server
      > full install with Local Agent using Docker
-     >
-5. - [ ] Prepare python API code with Docker file & Image
-6. - [ ] write k8s Manifests
-7. - [ ] Use Ingress
-8. - [ ] Install Image Repository
-9. - [ ] Design Gitlab PipeLine
+     > Integerate with LDAP freeipa
+6. - [ ] Prepare python API code with Docker file & Image
+7. - [ ] write k8s Manifests
+8. - [ ] Use Ingress
+9. - [ ] Install Image Repository
+10. - [ ] Design Gitlab PipeLine
      > 1. Pull
      > 2. Test
      > 3. Build
@@ -19,7 +20,7 @@
      > 6. Deploy (Test)
      > 7. Deploy (Production)
      >
-10. - [ ] Install ArgoCD
-11. - [ ] Integrate Different Parts
-12. - [ ] monitoring
-13. - [ ] Install Rancher or better Dashboard
+11. - [ ] Install ArgoCD
+12. - [ ] Integrate Different Parts
+13. - [ ] monitoring
+14. - [ ] Install Rancher or better Dashboard
