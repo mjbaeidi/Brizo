@@ -19,7 +19,6 @@
      > 5. Push
      > 6. Deploy (Test)
      > 7. Deploy (Production)
-     >
 11. - [ ] Install ArgoCD
 12. - [ ] Integrate Different Parts
 13. - [ ] monitoring
