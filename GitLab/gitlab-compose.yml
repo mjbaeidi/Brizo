@@ -11,6 +11,27 @@ services:
         external_url 'https://gitlab.brizo.me'
         gitlab_rails['gitlab_shell_ssh_port'] = 2424
         letsencrypt['enable'] = false
+        # if you need ldap configuration uncomment this 
+        # gitlab_rails['ldap_enabled'] = true
+        # gitlab_rails['ldap_servers'] = {
+        #   'main' => {
+        #     'label' => 'LDAP',
+        #     'host' =>  'ipa.brizoproj.test',
+        #     'port' => 389,
+        #     'uid' => 'uid',
+        #     'bind_dn' => 'uid=admin,cn=users,cn=accounts,dc=brizoproj,dc=test',
+        #     'password' => 'brizo123',
+        #     'encryption' => 'plain',
+        #     'verify_certificates' => false,
+        #     'timeout' => 10,
+        #     'active_directory' => false,
+        #     'base' => 'cn=users,cn=accounts,dc=brizoproj,dc=test',
+        #     'lowercase_usernames' => 'false',
+        #     'retry_empty_result_with_codes' => [80],
+        #     'allow_username_or_email_login' => false,
+        #     'block_auto_created_users' => false
+        #   }
+        # }
     ports:
       - '80:80'
       - '443:443'

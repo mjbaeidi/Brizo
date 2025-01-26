@@ -78,3 +78,16 @@ Follow these steps to install GitLab:
    ```sh
    docker-compose up -d
    ```
+
+10. To enable LDAP authentication:
+    - Uncomment the LDAP configuration section in the `gitlab-compose.yml` file
+    - Adjust the following settings according to your LDAP server:
+      - `host`: Your LDAP server hostname
+      - `port`: LDAP server port (typically 389 for non-SSL)
+      - `bind_dn`: The DN of the LDAP admin user
+      - `password`: The password for the LDAP admin user
+      - `base`: The base DN where users are located
+    - Restart GitLab after making these changes:
+      ```sh
+      docker-compose restart gitlab
+      ```
