@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  freeipa-server:
+    image: freeipa/freeipa-server:rocky-9-4.12.2
+    container_name: freeipa-server-container
+    hostname: ipa.brizoproj.test
+    environment:
+      - IPA_SERVER_IP=10.192.127.237
+    ports:
+      - "80:80"
+      - "443:443"
+      - "389:389"
+      - "636:636"
+      - "88:88"
+      - "464:464"
+      - "88:88/udp"
+      - "464:464/udp"
+      - "123:123/udp"
+      - "10.192.127.237:53:53"
+      - "10.192.127.237:53:53/udp"
+    volumes:
+      - ipa-data:/data
+    stdin_open: true
+    tty: true
+    command: ipa-server-install -r BRIZOPROJ.TEST --setup-dns --no-ntp
+      #cap_add:
+      #  - NET_ADMIN
+    dns:
+      - 127.0.0.1
+
+volumes:
+  ipa-data:
