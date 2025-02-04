@@ -4,7 +4,7 @@ services:
   freeipa-server:
     image: freeipa/freeipa-server:rocky-9-4.12.2
     container_name: freeipa-server-container
-    hostname: ipa.brizoproj.test
+    hostname: ipa.brizo.me
     environment:
       - IPA_SERVER_IP=10.192.127.237
     ports:
@@ -23,7 +23,7 @@ services:
       - ipa-data:/data
     stdin_open: true
     tty: true
-    command: ipa-server-install -r BRIZOPROJ.TEST --setup-dns --no-ntp
+    command: ipa-server-install -r BRIZO.ME --setup-dns --no-ntp
       #cap_add:
       #  - NET_ADMIN
     dns:
