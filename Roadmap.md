@@ -1,7 +1,7 @@
 ## This is Roadmap of this project
 
 1. - [X] Upgrade Docker using Ansible
-2. - [ ] Install k8s
+2. - [X] Install k8s
 3. - [ ] Back-end Storage k8s
 4. - [X] Install FreeIPA
 5. - [ ] Install Gitlab Server
