@@ -28,6 +28,16 @@ services:
       #  - NET_ADMIN
     dns:
       - 127.0.0.1
+    networks:
+      - freeipa-network
 
 volumes:
   ipa-data:
+
+
+networks:
+  freeipa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
