@@ -23,13 +23,18 @@ services:
       - ipa-data:/data
     stdin_open: true
     tty: true
-    command: ipa-server-install -r BRIZO.ME --setup-dns --no-ntp
+    command: ipa-server-install -r BRIZO.ME --setup-dns --no-ntp --ip-address=10.192.127.237
       #cap_add:
       #  - NET_ADMIN
     dns:
       - 127.0.0.1
+    extra_hosts:
+      - "ipa.brizo.me:10.192.127.237"
+      - "ipa:10.192.127.237"
     networks:
-      - freeipa-network
+      freeipa-network:
+        ipv4_address: 172.18.0.10
+
 
 volumes:
   ipa-data:
