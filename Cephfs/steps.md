@@ -32,3 +32,41 @@
 6. **Create a CephFS filesystem**
 > **Note:** Pools and MDS (Metadata Servers) are created automatically.
 
+7. **Add Ceph-CSI repository in Helm and pull the chart**
+    ```sh
+    helm repo add ceph-csi https://ceph.github.io/csi-charts
+    helm repo update
+    helm pull ceph-csi/ceph-csi --untar
+    ```
+
+8. **Update the values.yaml file**
+    - Modify the `values.yaml` file to include the necessary configurations for your CephFS setup.
+    - Example changes:
+    ```yaml
+    csiConfig: 
+      - clusterID: 4dddb8b2-ec3f-11ef-82f3-005056bccd49
+        monitors:
+          - 10.192.127.239:6789
+          - 10.192.127.237:6789
+          - 10.192.127.229:6789
+        cephFS:
+          subvolumeGroup: "csi"
+    storageClass:
+      create: enable
+      name: k8s-cephfs
+      clusterID: 4dddb8b2-ec3f-11ef-82f3-005056bccd49
+      fsName: mycephfs
+      volumeNamePrefix: "poc-k8s-"
+      provisionerSecret: csi-cephfs-secret
+      controllerExpandSecret: csi-cephfs-secret
+      nodeStageSecret: csi-cephfs-secret
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+
+    secret:
+      create: true
+      name: csi-cephfs-secret
+      adminID: admin
+      adminKey: AQCYoLFnJtJoAxAAlSLYQmMAHMkq1Gr3Hc3uWg==
+    ```
+

@@ -32,7 +32,14 @@ serviceAccounts:
 #       subvolumeGroup: "csi"
 #       netNamespaceFilePath: "{{ .kubeletDir }}/plugins/{{ .driverName }}/net"
 #       radosNamespace: "csi"
-csiConfig: []
+csiConfig: 
+  - clusterID: 4dddb8b2-ec3f-11ef-82f3-005056bccd49
+    monitors:
+      - 10.192.127.239:6789
+      - 10.192.127.237:6789
+      - 10.192.127.229:6789
+    cephFS:
+      subvolumeGroup: "csi"
 
 # Configuration for the encryption KMS
 # yamllint disable-line rule:line-length
@@ -307,8 +314,8 @@ selinuxMount: true
 
 storageClass:
   # Specifies whether the Storage class should be created
-  create: false
-  name: csi-cephfs-sc
+  create: enable
+  name: k8s-cephfs
   # Annotations for the storage class
   # Example:
   # annotations:
@@ -319,10 +326,10 @@ storageClass:
   # Should be unique across all Ceph clusters in use for provisioning,
   # cannot be greater than 36 bytes in length, and should remain immutable for
   # the lifetime of the StorageClass in use.
-  clusterID: <cluster-ID>
+  clusterID: 4dddb8b2-ec3f-11ef-82f3-005056bccd49
   # (required) CephFS filesystem name into which the volume shall be created
   # eg: fsName: myfs
-  fsName: myfs
+  fsName: mycephfs
   # (optional) Ceph pool into which volume data shall be stored
   # pool: <cephfs-data-pool>
   # For eg:
@@ -345,7 +352,7 @@ storageClass:
   # (optional) Prefix to use for naming subvolumes.
   # If omitted, defaults to "csi-vol-".
   # volumeNamePrefix: "foo-bar-"
-  volumeNamePrefix: ""
+  volumeNamePrefix: "poc-k8s-"
 
   # (optional) Instruct the plugin it has to encrypt the volume
   # By default it is disabled. Valid values are "true" or "false".
@@ -377,14 +384,14 @@ storageClass:
 
 secret:
   # Specifies whether the secret should be created
-  create: false
+  create: true
   name: csi-cephfs-secret
   annotations: {}
   # Key values correspond to a user name and its key, as defined in the
   # ceph cluster. User ID should have required access to the 'pool'
   # specified in the storage class
-  adminID: <plaintext ID>
-  adminKey: <Ceph auth key corresponding to ID above>
+  adminID: admin
+  adminKey: AQCYoLFnJtJoAxAAlSLYQmMAHMkq1Gr3Hc3uWg==
   # User credentials are required for the static provisioned PVC.
   userID: ""
   userKey: ""
