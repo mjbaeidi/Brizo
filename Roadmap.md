@@ -2,7 +2,7 @@
 
 1. - [X] Upgrade Docker using Ansible
 2. - [X] Install k8s
-3. - [ ] Back-end Storage k8s
+3. - [X] Back-end Storage k8s (cephfs)
 4. - [X] Install FreeIPA
 5. - [ ] Install Gitlab Server
      > full install with Local Agent using Docker
