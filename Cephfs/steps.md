@@ -39,7 +39,12 @@
    helm repo update
    helm pull ceph-csi/ceph-csi-cephfs --untar
    ```
-8. **Update the values.yaml file**
+8. **create namespace**
+
+   ```bash
+   kubectl create ns ceph-csi-cephfs
+   ```
+9. **Update the values.yaml file**
 
    - Modify the `values.yaml` file to include the necessary configurations for your CephFS setup.
    - Example changes:
