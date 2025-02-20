@@ -22,4 +22,4 @@
 11. - [ ] Install ArgoCD
 12. - [ ] Integrate Different Parts
 13. - [ ] monitoring
-14. - [ ] Install Rancher or better Dashboard
+14. - [X] Install Rancher or better Dashboard (portainer was installed and steps are clear)
