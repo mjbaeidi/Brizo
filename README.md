@@ -17,7 +17,6 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 8. - [ ] Use Ingress
 9. - [ ] Install Image Repository
 10. - [ ] Design Gitlab PipeLine
-
     > 1. Pull
     > 2. Test
     > 3. Build
