@@ -4,10 +4,10 @@
 2. - [X] Install k8s
 3. - [X] Back-end Storage k8s (cephfs)
 4. - [X] Install FreeIPA
-5. - [ ] Install Gitlab Server
+5. - [X] Install Gitlab Server
      > full install with Local Agent using Docker
      > Integerate with LDAP freeipa
-6. - [ ] Prepare python API code with Docker file & Image
+6. - [X] Prepare python API code with Docker file & Image
 7. - [ ] write k8s Manifests
 8. - [ ] Use Ingress
 9. - [ ] Install Image Repository
