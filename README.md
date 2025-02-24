@@ -12,7 +12,6 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 5. - [X] Install Gitlab Server
      > full install with Local Agent using Docker
      > Integerate with LDAP freeipa
-     >
 6. - [X] Prepare python API code with Docker file & Image
 7. - [ ] write k8s Manifests
 8. - [ ] Use Ingress
@@ -26,7 +25,6 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
     > 5. Push
     > 6. Deploy (Test)
     > 7. Deploy (Production)
-    >
 11. - [ ] Install ArgoCD
 12. - [ ] Integrate Different Parts
 13. - [ ] monitoring
