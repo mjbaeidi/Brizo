@@ -10,8 +10,8 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 3. - [X] Back-end Storage k8s (cephfs)
 4. - [X] Install FreeIPA
 5. - [X] Install Gitlab Server
-     > full install with Local Agent using Docker
-     > Integerate with LDAP freeipa
+     > 1. full install with Local Agent using Docker
+     > 2. Integerate with LDAP freeipa
 6. - [X] Prepare python API code with Docker file & Image
 7. - [ ] write k8s Manifests
 8. - [ ] Use Ingress
