@@ -16,7 +16,7 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 7. - [ ] write k8s Manifests
 8. - [ ] Use Ingress
 9. - [ ] Install Image Repository
-10. - [ ] Design Gitlab PipeLine
+10. - [X] Design Gitlab PipeLine (some parts deploy for testing purpose)
     > 1. Pull
     > 2. Test
     > 3. Build
