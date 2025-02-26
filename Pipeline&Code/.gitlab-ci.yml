@@ -1,0 +1,76 @@
+stages:
+  - build
+  - test
+  - push
+
+variables:
+  IMAGE_NAME: "registry.okcs.com/containers-okcs/flask-apm-app"
+  IMAGE_TAG: "$CI_COMMIT_TAG"
+  DOCKER_TLS_CERTDIR: ""
+
+default:
+  tags:
+    - docker
+  image: 
+    name: docker:24.0.5
+    pull_policy: if-not-present
+
+  services:
+    - docker:24.0.5-dind
+
+build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker save -o image.tar $IMAGE_NAME:$IMAGE_TAG
+  artifacts:
+    paths:
+      - image.tar
+    expire_in: 1 day
+
+# test:
+#   stage: test
+#   rules:
+#     - if: $CI_COMMIT_TAG
+#   script:
+#     - docker load -i image.tar
+#     - docker run -d --name test-container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+#     - sleep 5
+#     - curl -f http://localhost:5000 || (echo "Test failed" && exit 1)
+#   after_script:
+#     - docker stop test-container || true
+#     - docker rm test-container || true
+test:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_TAG
+  services:
+    - name: docker:24.0.5-dind
+  script:
+    - apk add --no-cache curl
+    - docker load -i image.tar
+    - docker run -d --name test-container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+    - sleep 5
+    - curl -f http://docker:5000 || (echo "Test failed" && exit 1)
+  after_script:
+    - docker stop test-container || true
+    - docker rm test-container || true
+
+
+push:
+  stage: push
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "10.192.30.201 registry.okcs.com" >> /etc/hosts
+    - |
+      if ! docker login -u "admin" -p "$JFROG_REGISTRY_PASSWORD" registry.okcs.com; then
+        echo "Failed to log in to registry"
+        exit 1
+      fi
+    - docker load -i image.tar
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+  after_script:
+    - docker logout registry.okcs.com
