@@ -51,3 +51,18 @@
 - Ensure proper network connectivity to GitLab instance
 - Keep the registration token secure
 - Make sure SSL certificates are properly configured if using HTTPS
+
+5. **Modify Runner Configuration**
+   - Edit the `/srv/gitlab-runner/config/config.toml` file:
+     ```toml
+     [[runners]]
+       [runners.docker]
+         pull_policy = "if-not-present"
+         extra_hosts = ["gitlab.brizo.me:10.192.127.229", "registry.okcs.com:10.192.30.201"] #for any extra-host
+         privileged = true
+         image = "docker:24.0.5"
+     ```
+6. **Restart gitlab-runner container**
+   ```bash
+   docker container restart gitlab-runner
+   ```
