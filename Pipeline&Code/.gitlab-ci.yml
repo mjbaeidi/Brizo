@@ -30,18 +30,6 @@ build:
       - image.tar
     expire_in: 1 day
 
-# test:
-#   stage: test
-#   rules:
-#     - if: $CI_COMMIT_TAG
-#   script:
-#     - docker load -i image.tar
-#     - docker run -d --name test-container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
-#     - sleep 5
-#     - curl -f http://localhost:5000 || (echo "Test failed" && exit 1)
-#   after_script:
-#     - docker stop test-container || true
-#     - docker rm test-container || true
 test:
   stage: test
   rules:
