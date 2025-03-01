@@ -42,7 +42,7 @@ default:
 # Docker layer cache definition
 .docker_layer_cache: &docker_layer_cache
   cache:
-    key: docker-${CI_COMMIT_REF_SLUG}
+    key: docker-cache
     paths:
       - ${DOCKER_CACHE_DIR}
     policy: pull-push
@@ -61,6 +61,7 @@ build:
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         --cache-from type=local,src=${DOCKER_CACHE_DIR}/buildkit \
+        --cache-to type=local,dest=${DOCKER_CACHE_DIR}/buildkit,mode=max \
         --cache-from $IMAGE_NAME:latest \
         --cache-from $IMAGE_NAME:$IMAGE_TAG \
         --tag $IMAGE_NAME:$IMAGE_TAG \
