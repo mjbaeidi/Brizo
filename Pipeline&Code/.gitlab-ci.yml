@@ -10,6 +10,8 @@ variables:
   # Cache settings for Docker layers
   DOCKER_BUILDKIT: 1
   DOCKER_DRIVER: overlay2
+  # Cache directories
+  DOCKER_CACHE_DIR: ".docker-cache"
 
 default:
   tags:
@@ -27,6 +29,8 @@ default:
     - echo "10.192.30.201 registry.okcs.com" >> /etc/hosts
     # Pre-login to registry to pull cache images faster
     - docker login -u "admin" -p "$JFROG_REGISTRY_PASSWORD" registry.okcs.com || echo "Login failed, will retry during push stage"
+    # Create cache directories if they don't exist
+    - mkdir -p "${DOCKER_CACHE_DIR}"
 
 # Cache for apk packages
 .apk_cache: &apk_cache
@@ -35,16 +39,28 @@ default:
     paths:
       - /var/cache/apk
 
+# Docker layer cache definition
+.docker_layer_cache: &docker_layer_cache
+  cache:
+    key: docker-${CI_COMMIT_REF_SLUG}
+    paths:
+      - ${DOCKER_CACHE_DIR}
+    policy: pull-push
+
 build:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG
-  <<: *before_script_def
+  <<: [*before_script_def, *docker_layer_cache]
   script:
+    # Setup Docker BuildKit cache 
+    - mkdir -p "${DOCKER_CACHE_DIR}/buildkit"
+    - export DOCKER_BUILDKIT_CACHE_DIR="${DOCKER_CACHE_DIR}/buildkit"
     # Use BuildKit and multi-stage builds for better caching
     - |
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --cache-from type=local,src=${DOCKER_CACHE_DIR}/buildkit \
         --cache-from $IMAGE_NAME:latest \
         --cache-from $IMAGE_NAME:$IMAGE_TAG \
         --tag $IMAGE_NAME:$IMAGE_TAG \
