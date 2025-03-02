@@ -46,7 +46,6 @@ build:
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         --cache-from $IMAGE_NAME:latest \
-        --cache-from $IMAGE_NAME:$IMAGE_TAG \
         --tag $IMAGE_NAME:$IMAGE_TAG \
         .
     - docker save $IMAGE_NAME:$IMAGE_TAG | gzip > image.tar.gz
