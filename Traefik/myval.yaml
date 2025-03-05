@@ -1,0 +1,20 @@
+experimental:
+  kubernetesGateway:
+    enabled: true
+
+providers:
+  kubernetesGateway:
+    enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: true
+
+nodeSelector:
+  node-ip: "10.192.127.237"
+
+ports:
+  web:
+    hostPort: 80
+  traefik:
+    hostPort: 8080
