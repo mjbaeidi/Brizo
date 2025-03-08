@@ -18,3 +18,5 @@ ports:
     hostPort: 80
   traefik:
     hostPort: 8080
+  websecure:
+    hostPort: 443
