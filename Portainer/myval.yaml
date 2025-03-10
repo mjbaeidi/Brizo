@@ -1,0 +1,4 @@
+persistence:
+  storageClass: {your-storage-class}
+tls:
+  force: true
