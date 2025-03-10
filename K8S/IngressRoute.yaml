@@ -1,0 +1,29 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: flask-route-tls
+  namespace: app
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`kuber.brizo.me`) && PathPrefix(`/flaskapp`)
+      kind: Rule
+      services:
+        - name: flask-apm-service
+          namespace: app
+          port: 80
+      middlewares:
+        - name: flask-tls-url-rewrite
+        - name: app-auth
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: flask-tls-url-rewrite
+  namespace: app
+spec:
+  replacePathRegex:
+    regex: ^/flaskapp(.*)
+    replacement: /$1
