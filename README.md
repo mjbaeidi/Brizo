@@ -27,4 +27,4 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 11. - [X] Install ArgoCD (use add on microk8s)
 12. - [ ] Integrate Different Parts
 13. - [ ] monitoring
-14. - [X] Install Rancher or better Dashboard (portainer was installed and steps are clear)
+14. - [X] Install Rancher or better Dashboard (portainer)
