@@ -1,0 +1,21 @@
+version: "3"
+services:
+  nexus-compose:
+    image: sonatype/nexus3
+    container_name: nexus-compose
+    volumes:
+      - nexus-data:/nexus-data
+    ports:
+      - 80:8081
+      - 7030:7030
+    restart: on-failure:10
+    networks:
+      - my_test_network
+volumes:
+    nexus-data:
+      external: true
+      name: nexus-data
+networks:
+    my_test_network:
+      driver: bridge
+      external: true

@@ -15,7 +15,7 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
 6. - [X] Prepare python API code with Docker file & Image
 7. - [X] write k8s Manifests
 8. - [X] Use Ingress (Use GatewayAPI of kubernetes and Traefik)
-9. - [ ] Install Image Repository (use already existed jfrog)
+9. - [X] Install Image Repository (use already existed jfrog)
 10. - [X] Design Gitlab PipeLine (some parts deploy for testing purpose)
     > 1. Pull
     > 2. Test
