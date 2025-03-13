@@ -1,0 +1,57 @@
+# Default values for flask-app
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+namespace:
+  name: stage
+
+image:
+  repository: registry.okcs.com/containers-okcs/flask-apm-app
+  tag: v1.27
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: jfrogcred
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+gateway:
+  enabled: true
+  className: traefik
+  httpPort: 8000
+
+ingress:
+  enabled: true
+  host: kuber.brizo.me
+  path: /flaskapp
+  entryPoint: websecure
+  serviceName: flask-apm-service
+  servicePort: 80
+
+middleware:
+  pathRewrite:
+    enabled: true
+    name: flask-tls-url-rewrite
+    regex: ^/flaskapp(.*)
+    replacement: /$1
+  auth:
+    enabled: true
+    name: app-auth
+    secret: authsecret
+
+auth:
+  users: YnJpem86JGFwcjEkYjNqWnB5OFAkSENVU1FZcExsZ20zMHVGLzkwTHA3MAoK
+
+# resources:
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+
+environment: stage

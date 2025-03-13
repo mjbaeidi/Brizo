@@ -1,0 +1,27 @@
+{{- if .Values.middleware.pathRewrite.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Values.middleware.pathRewrite.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: {{ .Values.middleware.pathRewrite.regex }}
+    replacement: {{ .Values.middleware.pathRewrite.replacement }}
+{{- end }}
+
+{{- if .Values.middleware.auth.enabled }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Values.middleware.auth.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+spec:
+  basicAuth:
+    secret: {{ .Values.middleware.auth.secret }}
+{{- end }}

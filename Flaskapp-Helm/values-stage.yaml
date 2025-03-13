@@ -1,0 +1,12 @@
+# Staging environment specific values
+replicaCount: 1
+
+namespace:
+  name: stage
+
+ingress:
+  host: stage.kuber.brizo.me
+  
+resources: {}
+
+environment: stage

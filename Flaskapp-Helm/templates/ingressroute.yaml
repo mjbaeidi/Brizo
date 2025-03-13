@@ -1,0 +1,25 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "flask-app.fullname" . }}-route-tls
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ .Values.ingress.entryPoint }}
+  routes:
+    - match: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`{{ .Values.ingress.path }}`)
+      kind: Rule
+      services:
+        - name: {{ .Values.ingress.serviceName | default (printf "%s-service" (include "flask-app.fullname" .)) }}
+          port: {{ .Values.ingress.servicePort }}
+      middlewares:
+        {{- if .Values.middleware.pathRewrite.enabled }}
+        - name: {{ .Values.middleware.pathRewrite.name }}
+        {{- end }}
+        {{- if .Values.middleware.auth.enabled }}
+        - name: {{ .Values.middleware.auth.name }}
+        {{- end }}
+{{- end }}

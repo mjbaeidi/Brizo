@@ -1,0 +1,18 @@
+# Production environment specific values
+replicaCount: 1
+
+namespace:
+  name: prod
+
+ingress:
+  host: prod.kuber.brizo.me
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+environment: prod
