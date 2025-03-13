@@ -6,6 +6,9 @@ import time
 import random
 import requests
 
+# Define app version
+APP_VERSION = "1.0.0"
+
 app = Flask(__name__)
 
 # Configure Elastic APM
@@ -34,6 +37,8 @@ def error_request():
         1 / 0
     except ZeroDivisionError:
         apm.capture_exception()
+        return "Error occurred: Division by zero"
+
 @app.route('/trace', methods=['POST'])
 def trace_request():
     data = request.json
@@ -42,13 +47,18 @@ def trace_request():
 @app.route('/call-external')
 def call_external():
     """Simulate a request to another service and propagate tracing headers"""
-    header= {}
+    header = {}
     try:
         response = requests.get("https://www.google.com")
         return jsonify({"status": response.status_code, "response": response.text})
     except requests.exceptions.RequestException as e:
         apm.capture_exception()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/version')
+def version():
+    """Return the current application version"""
+    return jsonify({"version": APP_VERSION})
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
