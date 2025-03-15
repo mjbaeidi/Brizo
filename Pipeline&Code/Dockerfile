@@ -10,6 +10,8 @@ COPY requirements.txt .
 # Install dependencies in a virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ARG DOCKERTAG
+ENV APP_VERSION = $DOCKERTAG
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code

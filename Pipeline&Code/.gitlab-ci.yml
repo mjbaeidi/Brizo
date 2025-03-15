@@ -47,6 +47,7 @@ build:
     - |
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg DOCKERTAG=$IMAGE_TAG \
         --cache-from $IMAGE_NAME:latest \
         --tag $IMAGE_NAME:$IMAGE_TAG \
         .

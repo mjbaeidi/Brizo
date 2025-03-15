@@ -5,9 +5,10 @@ from elasticapm.contrib.flask import ElasticAPM
 import time
 import random
 import requests
+import os
 
 # Define app version
-APP_VERSION = "1.0.0"
+APP_VERSION = os.getenv("APP_VERSION")
 
 app = Flask(__name__)
 
