@@ -29,7 +29,6 @@ ingress:
   host: kuber.brizo.me
   path: /flaskapp
   entryPoint: websecure
-  serviceName: flask-apm-service
   servicePort: 80
 
 middleware:
