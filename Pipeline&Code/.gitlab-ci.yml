@@ -104,14 +104,14 @@ deploy-stage:
   script:
     - apk add --no-cache git
     - git config --global http.sslVerify false
-    - git clone https://$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
+    - git clone https://token:$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
     - cd manifests/Flaskapp-Helm
     - 'sed -i "s/tag: .*/tag: $IMAGE_TAG/" values-stage.yaml'
     - git config --global user.email "ci@example.com"
     - git config --global user.name "CI Bot"
     - git add values-stage.yaml
     - git commit -m "Update image tag to $IMAGE_TAG"
-    - git push https://$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
+    - git push https://token:$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
 
 deploy-prod:
   stage: deploy-prod
@@ -121,12 +121,12 @@ deploy-prod:
   script:
     - apk add --no-cache git
     - git config --global http.sslVerify false
-    - git clone https://$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
+    - git clone https://token:$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
     - cd manifests/Flaskapp-Helm
     - 'sed -i "s/tag: .*/tag: $IMAGE_TAG/" values-prod.yaml'
     - git config --global user.email "ci@example.com"
     - git config --global user.name "CI Bot"
-    - git add values-stage.yaml
+    - git add values-prod.yaml
     - git commit -m "Update image tag to $IMAGE_TAG"
-    - git push https://$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
+    - git push https://token:$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
   when: manual
