@@ -25,6 +25,6 @@ Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline*
     > 6. Deploy (Test)
     > 7. Deploy (Production)
 11. - [X] Install ArgoCD (use add on microk8s)
-12. - [ ] Integrate Different Parts
-13. - [ ] monitoring
+12. - [X] Integrate Different Parts
+13. - [X] monitoring (the app use APM of elastic which has been configured already )
 14. - [X] Install Rancher or better Dashboard (portainer)
