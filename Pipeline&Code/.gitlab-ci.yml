@@ -123,7 +123,7 @@ deploy-prod:
     - git config --global http.sslVerify false
     - git clone https://$GITLAB_ACCESS_TOKEN@gitlab.brizo.me/brizogroup/manifests.git
     - cd manifests/Flaskapp-Helm
-    - 'sed -i "s/tag: .*/tag: $IMAGE_TAG/" values-stage.yaml'
+    - 'sed -i "s/tag: .*/tag: $IMAGE_TAG/" values-prod.yaml'
     - git config --global user.email "ci@example.com"
     - git config --global user.name "CI Bot"
     - git add values-stage.yaml
