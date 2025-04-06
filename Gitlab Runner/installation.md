@@ -61,9 +61,9 @@
          extra_hosts = ["gitlab.brizo.me:10.192.127.229", "registry.okcs.com:10.192.30.201"] #for any extra-host
          privileged = true
          image = "docker:24.0.5"
-         volumes = ["/var/cache/apk"] # Use a volume for local cache
+         volumes = ["/srv/gitlab-runner/cache:/cache"] # Use a mapped location for local cache
      ```
-
+   - **Note**: You must use the `/cache` of container directory for the local cache to work properly.
 6. **Restart gitlab-runner container**
    ```bash
    docker container restart gitlab-runner
