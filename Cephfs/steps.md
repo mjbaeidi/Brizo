@@ -6,7 +6,7 @@
    CEPH_RELEASE=18.2.4
    curl --silent --remote-name --location https://download.ceph.com/rpm-${CEPH_RELEASE}/el9/noarch/cephadm
    chmod +x cephadm
-   cephadm add-repo --release reef
+   ./cephadm add-repo --release reef
    ./cephadm install
    ```
 2. **Bootstrap new cluster**
