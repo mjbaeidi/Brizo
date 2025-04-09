@@ -5,7 +5,7 @@
    ```sh
    CEPH_RELEASE=18.2.4
    curl --silent --remote-name --location https://download.ceph.com/rpm-${CEPH_RELEASE}/el9/noarch/cephadm
-   chmod +x cephadm
+   chmod +x ./cephadm
    ./cephadm add-repo --release reef
    ./cephadm install
    ```
@@ -25,7 +25,7 @@
 4. **Install cephadm on each server**
 
    ```sh
-   ssh user@<OTHER_SERVER_IP> 'curl --silent --remote-name https://raw.githubusercontent.com/ceph/ceph/master/src/cephadm/cephadm && chmod +x cephadm && sudo ./cephadm install'
+   ssh user@<OTHER_SERVER_IP> 'CEPH_RELEASE=18.2.4 && curl --silent --remote-name https://download.ceph.com/rpm-${CEPH_RELEASE}/el9/noarch/cephadm && chmod +x ./cephadm && ./cephadm add-repo --release reef && sudo ./cephadm install'
    ```
 5. **Go to dashboard and expand cluster by adding other servers**
 
