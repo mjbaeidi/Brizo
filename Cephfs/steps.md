@@ -16,7 +16,7 @@
    ```
    > **Note:** You should allow Root Login in SSH Configuration
 
-   3. **Add Ceph Public Key to Authorized Keys of Other Servers**
+3. **Add Ceph Public Key to Authorized Keys of Other Servers**
 
    ```sh
    sudo ceph cephadm get-pub-key > ceph.pub
