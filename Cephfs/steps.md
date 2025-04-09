@@ -12,9 +12,11 @@
 2. **Bootstrap new cluster**
 
    ```sh
-   sudo cephadm bootstrap --mon-ip <IP_ADDRESS>
+   sudo cephadm --docker bootstrap --mon-ip <IP_ADDRESS>
    ```
-3. **Add Ceph public key into authorized keys of other servers**
+   > **Note:** You should allow Root Login in SSH Configuration
+
+   3. **Add Ceph Public Key to Authorized Keys of Other Servers**
 
    ```sh
    sudo ceph cephadm get-pub-key > ceph.pub
