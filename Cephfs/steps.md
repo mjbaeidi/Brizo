@@ -80,3 +80,9 @@
      adminID: admin
      adminKey: AQCYoLFnJtJoAxAAlSLYQmMAHMkq1Gr3Hc3uWg==
    ```
+
+10. **Install Helm Chart With New Values**
+
+   ```bash
+   helm install ceph-csi-cephfs -n ceph-csi-cephfs .
+   ```
