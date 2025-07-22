@@ -1,0 +1,9 @@
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: csi-cephfs-snapshotclass
+  labels:
+    velero.io/csi-volumesnapshot-class: "true"
+
+driver: cephfs.csi.ceph.com
+deletionPolicy: Delete
