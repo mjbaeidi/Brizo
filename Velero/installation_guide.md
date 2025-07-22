@@ -17,13 +17,22 @@ This guide provides step-by-step instructions for installing Velero on a Kuberne
 
 ## Installation Steps
 
-1.  **Create Namespace (if it doesn't exist):**
+1.  **Download and Install Velero CLI:**
+    Download the latest Velero release from the [official GitHub repository](https://github.com/vmware-tanzu/velero/releases). Extract the tarball and move the `velero` executable to a directory in your system's `PATH`, for example `/usr/local/bin`.
+    ```bash
+    # Example for Linux
+    wget https://github.com/vmware-tanzu/velero/releases/download/v1.16.1/velero-v1.16.1-linux-amd64.tar.gz
+    tar -xvf velero-v1.9.0-linux-amd64.tar.gz
+    sudo mv velero-v1.9.0-linux-amd64/velero /usr/local/bin/
+    ```
+
+2.  **Create Namespace (if it doesn't exist):**
     The installation command specifies the `velero` namespace. Create it if it doesn't exist:
     ```bash
     kubectl create namespace velero
     ```
 
-2.  **Install Velero:**
+3.  **Install Velero:**
     Deploy Velero using the `velero install` command. This command sets up Velero with the AWS provider, configures the S3 bucket location, and enables CSI snapshot support.
     ```bash
     velero install --use-node-agent --privileged-node-agent --provider aws \
@@ -36,7 +45,7 @@ This guide provides step-by-step instructions for installing Velero on a Kuberne
     ```
     This command installs Velero into the `velero` namespace using the specified configurations.
 
-3.  **Verify Installation:**
+4.  **Verify Installation:**
     Check the status of the Velero deployment to ensure all pods are running correctly.
     ```bash
     kubectl get pods -n velero
