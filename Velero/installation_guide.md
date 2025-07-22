@@ -12,7 +12,7 @@ This guide provides step-by-step instructions for installing Velero on a Kuberne
     kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
     kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
     ```
-*   An S3 compatible bucket created in advance. In this guide, the bucket is named `velero`.
+*   An S3 compatible bucket created in advance (This document use Minio as S3 compatible). In this guide, the bucket is named `velero`.
 *   A credentials file for your S3 provider. In this guide, it is named `credentials-velero` and located in the same directory where you run the installation command.
 
 ## Installation Steps
