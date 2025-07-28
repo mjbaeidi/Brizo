@@ -22,8 +22,8 @@ This guide provides step-by-step instructions for installing Velero on a Kuberne
     ```bash
     # Example for Linux
     wget https://github.com/vmware-tanzu/velero/releases/download/v1.16.1/velero-v1.16.1-linux-amd64.tar.gz
-    tar -xvf velero-v1.9.0-linux-amd64.tar.gz
-    sudo mv velero-v1.9.0-linux-amd64/velero /usr/local/bin/
+    tar -xvf velero-v1.16.1-linux-amd64.tar.gz
+    sudo mv velero-v1.16.1-linux-amd64/velero /usr/local/bin/
     ```
 
 2.  **Create Namespace (if it doesn't exist):**
