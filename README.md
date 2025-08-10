@@ -1,3 +1,5 @@
+![GitHub License](https://img.shields.io/github/license/mjbaeidi/Brizo)
+
 # Brizo
 
 Welcom to Brizo Project. This is going to be a **Fully Automated CI-CD Pipeline**
