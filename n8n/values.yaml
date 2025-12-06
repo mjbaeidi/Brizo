@@ -4,6 +4,13 @@
 # Declare variables to be passed into your templates.
 
 # -- This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+sharedStorage:
+  enabled: false
+  name: "n8n-shared-storage"
+  storageClass: "k8s-cephfs" # Must support ReadWriteMany
+  size: "20Gi"
+  accessMode: "ReadWriteMany"
+
 image:
   repository: n8nio/n8n
   # -- This sets the pull policy for images.
