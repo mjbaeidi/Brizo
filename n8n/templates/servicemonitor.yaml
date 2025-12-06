@@ -1,0 +1,100 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.serviceMonitor.enabled ) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+{{- if .Values.serviceMonitor.labels }}
+  labels:
+{{ toYaml .Values.serviceMonitor.labels | indent 4}}
+{{- end }}
+  name: {{ template "n8n.fullname" . }}
+{{- if eq .Values.serviceMonitor.namespace "" }}
+  namespace: {{ .Release.Namespace }}
+{{- else }}
+  namespace: {{ .Values.serviceMonitor.namespace }}
+{{- end }}
+spec:
+  endpoints:
+    - port: {{ .Values.service.name }}
+    {{- if .Values.serviceMonitor.interval }}
+      interval: {{ .Values.serviceMonitor.interval }}
+    {{- end }}
+      path: /metrics
+    {{- if .Values.serviceMonitor.timeout }}
+      scrapeTimeout: {{ .Values.serviceMonitor.timeout }}
+    {{- end }}
+    {{- if .Values.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+{{ toYaml .Values.serviceMonitor.metricRelabelings | indent 8 }}
+    {{- end }}
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name
+        - action: replace
+          targetLabel: role
+          replacement: "main"
+  {{- if ne .Values.serviceMonitor.namespace .Release.Namespace }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.main.selectorLabels" . | nindent 6 }}
+{{- if .Values.serviceMonitor.targetLabels }}
+  targetLabels:
+  {{- range .Values.serviceMonitor.targetLabels }}
+      - {{ . }}
+  {{- end }}
+{{- end }}
+
+{{- if and (eq .Values.db.type "postgresdb") (eq .Values.worker.mode "queue") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+{{- if .Values.serviceMonitor.labels }}
+  labels:
+{{ toYaml .Values.serviceMonitor.labels | indent 4}}
+{{- end }}
+  name: {{ template "n8n.worker.fullname" . }}
+{{- if eq .Values.serviceMonitor.namespace "" }}
+  namespace: {{ .Release.Namespace }}
+{{- else }}
+  namespace: {{ .Values.serviceMonitor.namespace }}
+{{- end }}
+spec:
+  podMetricsEndpoints:
+    - port: {{ .Values.service.name }}
+    {{- if .Values.serviceMonitor.interval }}
+      interval: {{ .Values.serviceMonitor.interval }}
+    {{- end }}
+      path: /metrics
+    {{- if .Values.serviceMonitor.timeout }}
+      scrapeTimeout: {{ .Values.serviceMonitor.timeout }}
+    {{- end }}
+    {{- if .Values.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+{{ toYaml .Values.serviceMonitor.metricRelabelings | indent 8 }}
+    {{- end }}
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name
+        - action: replace
+          targetLabel: role
+          replacement: "worker"
+  {{- if ne .Values.serviceMonitor.namespace .Release.Namespace }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.worker.selectorLabels" . | nindent 6 }}
+{{- if .Values.serviceMonitor.targetLabels }}
+  podTargetLabels:
+  {{- range .Values.serviceMonitor.targetLabels }}
+      - {{ . }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

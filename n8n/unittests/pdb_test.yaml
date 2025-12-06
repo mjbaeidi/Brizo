@@ -1,0 +1,170 @@
+suite: test pdb
+
+templates:
+  - pdb.yaml
+
+release:
+  name: n8n
+  namespace: n8n
+
+chart:
+  version: 1.0.0
+  appVersion: 1.0.0
+
+set:
+  webhook:
+    count: 1
+  worker:
+    count: 1
+
+tests:
+  - it: should not create pdb resource for main node when main.count is 1 and deployment strategy is Recreate
+    set:
+      strategy:
+        type: Recreate
+      main:
+        count: 1
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not create pdb resource for main, worker and webhook nodes when main.pdb.enabled is false and webhook.pdb.enabled is false and worker.pdb.enabled is false
+    set:
+      main:
+        pdb:
+          enabled: false
+      worker:
+        pdb:
+          enabled: false
+      webhook:
+        pdb:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create pdb resource for main node when main.count is 2 and deployment strategy is Recreate
+    set:
+      strategy:
+        type: Recreate
+      main:
+        count: 2
+    documentSelector:
+      path: metadata.name
+      value: n8n
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n
+
+  - it: should create pdb resource for main node when deployment strategy is not Recreate and main.count is 1
+    set:
+      strategy:
+        type: RollingUpdate
+      main:
+        count: 1
+    documentSelector:
+      path: metadata.name
+      value: n8n
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n
+
+  - it: should create pdb resource for webhook node when webhook queue mode enabled and webhook.count is bigger than 1
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+        count: 2
+        allNodes: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-webhook
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n-webhook
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/component"]
+          value: webhook
+
+  - it: should create pdb resource for webhook node when webhook queue mode enabled and webhook.autoscaling.enabled is true
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-webhook
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n-webhook
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/component"]
+          value: webhook
+
+  - it: should create pdb resource for worker node when worker queue mode enabled and worker.count is bigger than 1
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+        count: 2
+        allNodes: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-worker
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n-worker
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/component"]
+          value: worker
+
+  - it: should create pdb resource for worker node when worker queue mode enabled and worker.autoscaling.enabled is true
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-worker
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: n8n
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: n8n-worker
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/component"]
+          value: worker

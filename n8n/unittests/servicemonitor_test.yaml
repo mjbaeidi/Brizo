@@ -1,0 +1,337 @@
+suite: test service monitor
+
+templates:
+  - servicemonitor.yaml
+
+release:
+  name: n8n
+  namespace: n8n
+chart:
+  version: 1.0.0
+  appVersion: 1.0.0
+
+tests:
+  - it: should be empty when serviceMonitor is not enabled
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should be empty when capability has not required api version
+    set:
+      serviceMonitor.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should use the desired service name as the target endpoint for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      service.name: myendpoint
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.endpoints
+          content:
+            port: myendpoint
+          any: true
+
+  - it: should use the desired service name as the target endpoint for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      service.name: myendpoint
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podMetricsEndpoints
+          content:
+            port: myendpoint
+          any: true
+
+  - it: should use the desired interval for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.interval: 15s
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.endpoints
+          content:
+            interval: 15s
+          any: true
+
+  - it: should use the desired interval for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      serviceMonitor.interval: 15s
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podMetricsEndpoints
+          content:
+            interval: 15s
+          any: true
+
+  - it: should use the desired timeout for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.timeout: 15s
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.endpoints
+          content:
+            scrapeTimeout: 15s
+          any: true
+
+  - it: should use the desired timeout for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      serviceMonitor.timeout: 15s
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podMetricsEndpoints
+          content:
+            scrapeTimeout: 15s
+          any: true
+
+  - it: should use the desired metric relabelings for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.metricRelabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name
+          action: replace
+          replacement: mypod
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.endpoints
+          content:
+            metricRelabelings:
+              - sourceLabels: [__meta_kubernetes_pod_name]
+                targetLabel: pod_name
+                action: replace
+                replacement: mypod
+          any: true
+
+  - it: should use the desired metric relabelings for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      serviceMonitor.metricRelabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name
+          action: replace
+          replacement: mypod
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podMetricsEndpoints
+          content:
+            metricRelabelings:
+              - sourceLabels: [__meta_kubernetes_pod_name]
+                targetLabel: pod_name
+                action: replace
+                replacement: mypod
+          any: true
+
+  - it: should set pod name and role for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.endpoints
+          content:
+            relabelings:
+              - sourceLabels: [__meta_kubernetes_pod_name]
+                targetLabel: pod_name
+              - action: replace
+                targetLabel: role
+                replacement: main
+          any: true
+
+  - it: should set pod name and role for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podMetricsEndpoints
+          content:
+            relabelings:
+              - sourceLabels: [__meta_kubernetes_pod_name]
+                targetLabel: pod_name
+              - action: replace
+                targetLabel: role
+                replacement: worker
+          any: true
+
+  - it: should set namespaceSelector when namespace is different from release namespace for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.namespace: differentnamespace
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.namespaceSelector.matchNames
+          content:
+            n8n
+          any: true
+
+  - it: should set namespaceSelector when namespace is different from release namespace for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      serviceMonitor.namespace: differentnamespace
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.namespaceSelector.matchNames
+          content:
+            n8n
+          any: true
+
+  - it: should set targetLabels for ServiceMonitor
+    set:
+      serviceMonitor.enabled: true
+      serviceMonitor.targetLabels:
+        - pod_name
+        - role
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: ServiceMonitor
+    asserts:
+      - contains:
+          path: spec.targetLabels
+          content:
+            pod_name
+          any: true
+      - contains:
+          path: spec.targetLabels
+          content:
+            role
+          any: true
+
+  - it: should set targetLabels for PodMonitor
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+      serviceMonitor.targetLabels:
+        - pod_name
+        - role
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    documentSelector:
+      path: kind
+      value: PodMonitor
+    asserts:
+      - contains:
+          path: spec.podTargetLabels
+          content:
+            pod_name
+          any: true
+      - contains:
+          path: spec.podTargetLabels
+          content:
+            role
+          any: true
+
+  - it: should match snapshot of default values
+    set:
+      serviceMonitor.enabled: true
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot with worker mode queue
+    set:
+      db.type: postgresdb
+      worker.mode: queue
+      serviceMonitor.enabled: true
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    asserts:
+      - matchSnapshot: { }

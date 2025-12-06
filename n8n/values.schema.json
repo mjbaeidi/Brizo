@@ -1,0 +1,4931 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "affinity": {
+      "additionalProperties": true,
+      "description": "DEPRECATED: Use main, worker, and webhook blocks affinity fields instead. This field will be removed in a future release.",
+      "required": [],
+      "title": "affinity",
+      "type": "object"
+    },
+    "api": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Whether to enable the Public API",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "path": {
+          "default": "api",
+          "description": "Path segment for the Public API",
+          "required": [],
+          "title": "path",
+          "type": "string"
+        },
+        "swagger": {
+          "additionalProperties": false,
+          "description": "Whether to enable the Swagger UI for the Public API",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": ["enabled"],
+          "title": "swagger",
+          "type": "object"
+        }
+      },
+      "required": ["enabled", "path", "swagger"],
+      "title": "api",
+      "type": "object"
+    },
+    "binaryData": {
+      "additionalProperties": false,
+      "description": "Configuration for binary data storage",
+      "properties": {
+        "availableModes": {
+          "default": [],
+          "description": "Available modes of binary data storage. If not set, the default mode will be used. For more information, see https://docs.n8n.io/hosting/configuration/environment-variables/binary-data/",
+          "required": [],
+          "title": "availableModes",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["filesystem", "s3"]
+          }
+        },
+        "mode": {
+          "default": "default",
+          "description": "The default binary data mode. default keeps binary data in memory. Set to filesystem to use the filesystem, or s3 to AWS S3. Note that binary data pruning operates on the active binary data mode. For example, if your instance stored data in S3, and you later switched to filesystem mode, n8n only prunes binary data in the filesystem. This may change in future. Valid values are 'default' | 'filesystem' | 's3'. For more information, see https://docs.n8n.io/hosting/configuration/environment-variables/binary-data/",
+          "required": [],
+          "title": "mode",
+          "type": "string",
+          "enum": ["default", "filesystem", "s3"]
+        },
+        "localStoragePath": {
+          "default": "",
+          "description": "Path for binary data storage in 'filesystem' mode. If not set, the default path will be used. For more information, see https://docs.n8n.io/hosting/configuration/environment-variables/binary-data/",
+          "required": [],
+          "title": "localStoragePath",
+          "type": "string"
+        },
+        "s3": {
+          "additionalProperties": false,
+          "description": "S3-compatible external storage configurations. For more information, see https://docs.n8n.io/hosting/configuration/environment-variables/external-data-storage/",
+          "properties": {
+            "host": {
+              "default": "",
+              "description": "Host of the n8n bucket in S3-compatible external storage. For example, s3.us-east-1.amazonaws.com",
+              "required": [],
+              "title": "host",
+              "type": "string"
+            },
+            "bucketName": {
+              "default": "",
+              "description": "Name of the n8n bucket in S3-compatible external storage.",
+              "required": [],
+              "title": "bucketName",
+              "type": "string"
+            },
+            "bucketRegion": {
+              "default": "us-east-1",
+              "description": "Region of the S3-compatible external storage bucket. For example, us-east-1",
+              "required": [],
+              "title": "bucketRegion",
+              "type": "string"
+            },
+            "accessKey": {
+              "default": "",
+              "description": "Access key in S3-compatible external storage",
+              "required": [],
+              "title": "accessKey",
+              "type": "string"
+            },
+            "accessSecret": {
+              "default": "",
+              "description": "Access secret in S3-compatible external storage",
+              "required": [],
+              "title": "accessSecret",
+              "type": "string"
+            },
+            "existingSecret": {
+              "default": "",
+              "description": "This is for setting up the s3 file storage existing secret. Must contain access-key-id and secret-access-key keys.",
+              "required": [],
+              "title": "existingSecret",
+              "type": "string"
+            }
+          },
+          "required": ["host", "bucketName", "bucketRegion", "accessKey", "accessSecret", "existingSecret"],
+          "title": "s3",
+          "type": "object"
+        }
+      },
+      "required": ["mode", "localStoragePath", "s3"],
+      "title": "binaryData",
+      "type": "object"
+    },
+    "db": {
+      "additionalProperties": false,
+      "description": "n8n database configurations",
+      "properties": {
+        "logging": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether database logging is enabled.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "maxQueryExecutionTime": {
+              "default": 0,
+              "description": "Only queries that exceed this time (ms) will be logged. Set `0` to disable.",
+              "required": [],
+              "title": "maxQueryExecutionTime",
+              "type": "integer",
+              "minimum": 0
+            },
+            "options": {
+              "default": "error",
+              "description": "Database logging level. Requires `maxQueryExecutionTime` to be higher than `0`. Valid values 'query' | 'error' | 'schema' | 'warn' | 'info' | 'log' | 'all'",
+              "required": [],
+              "title": "options",
+              "type": "string",
+              "enum": ["query", "error", "schema", "warn", "info", "log", "all"]
+            }
+          },
+          "required": ["enabled", "options", "maxQueryExecutionTime"],
+          "title": "logging",
+          "type": "object"
+        },
+        "sqlite": {
+          "additionalProperties": false,
+          "properties": {
+            "database": {
+              "default": "database.sqlite",
+              "description": "SQLite database file name",
+              "required": [],
+              "title": "database",
+              "type": "string"
+            },
+            "poolSize": {
+              "default": 0,
+              "description": "SQLite database pool size. Set to `0` to disable pooling.",
+              "required": [],
+              "title": "poolSize",
+              "type": "integer",
+              "minimum": 0
+            },
+            "vacuum": {
+              "default": false,
+              "description": "Runs VACUUM operation on startup to rebuild the database. Reduces file size and optimizes indexes. This is a long running blocking operation and increases start-up time.",
+              "required": [],
+              "title": "vacuum",
+              "type": "boolean"
+            }
+          },
+          "required": ["database", "poolSize", "vacuum"],
+          "title": "sqlite",
+          "type": "object"
+        },
+        "postgresdb": {
+          "additionalProperties": false,
+          "properties": {
+            "poolSize": {
+              "default": 2,
+              "description": "Control how many parallel open Postgres connections n8n should have. Increasing it may help with resource utilization, but too many connections may degrade performance.",
+              "required": [],
+              "title": "poolSize",
+              "type": "integer",
+              "minimum": 1
+            },
+            "connectionTimeout": {
+              "default": 20000,
+              "description": "Postgres connection timeout (ms).",
+              "required": [],
+              "title": "connectionTimeout",
+              "type": "integer",
+              "minimum": 1000
+            },
+            "idleConnectionTimeout": {
+              "default": 30000,
+              "description": "Amount of time before an idle connection is eligible for eviction for being idle.",
+              "required": [],
+              "title": "idleConnectionTimeout",
+              "type": "integer",
+              "minimum": 1000
+            },
+            "schema": {
+              "default": "public",
+              "description": "The PostgreSQL schema.",
+              "required": [],
+              "title": "schema",
+              "type": "string"
+            },
+            "ssl": {
+              "additionalProperties": false,
+              "description": "The PostgreSQL connection SSL settings. Find more information from here: https://docs.n8n.io/hosting/configuration/supported-databases-settings/#postgresdb",
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable SSL.",
+                  "required": [],
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "base64EncodedCertificateAuthorityFile": {
+                  "default": "",
+                  "description": "The PostgreSQL base64 encoded version of SSL certificate authority file content.",
+                  "required": [],
+                  "title": "base64EncodedCertificateAuthorityFile",
+                  "type": "string"
+                },
+                "base64EncodedCertFile": {
+                  "default": "",
+                  "description": "The PostgreSQL base64 encoded version of SSL certificate file content.",
+                  "required": [],
+                  "title": "base64EncodedCertFile",
+                  "type": "string"
+                },
+                "base64EncodedPrivateKeyFile": {
+                  "default": "",
+                  "description": "The PostgreSQL base64 encoded version of SSL private key file content.",
+                  "required": [],
+                  "title": "base64EncodedPrivateKeyFile",
+                  "type": "string"
+                },
+                "existingCertificateAuthorityFileSecret": {
+                  "additionalProperties": false,
+                  "description": "The PostgreSQL existing certificate authority file secret.",
+                  "properties": {
+                    "name": {
+                      "default": "",
+                      "description": "The name of the existing secret.",
+                      "required": [],
+                      "title": "name",
+                      "type": "string"
+                    },
+                    "key": {
+                      "default": "",
+                      "description": "The key of the certificate authority file in the existing secret.",
+                      "required": [],
+                      "title": "key",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "key"],
+                  "title": "existingCertificateAuthorityFileSecret",
+                  "type": "object"
+                },
+                "existingCertFileSecret": {
+                  "additionalProperties": false,
+                  "description": "The PostgreSQL existing certificate file secret.",
+                  "properties": {
+                    "name": {
+                      "default": "",
+                      "description": "The name of the existing secret.",
+                      "required": [],
+                      "title": "name",
+                      "type": "string"
+                    },
+                    "key": {
+                      "default": "",
+                      "description": "The key of the certificate file in the existing secret.",
+                      "required": [],
+                      "title": "key",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "key"],
+                  "title": "existingCertFileSecret",
+                  "type": "object"
+                },
+                "existingPrivateKeyFileSecret": {
+                  "additionalProperties": false,
+                  "description": "The PostgreSQL existing SSL private key file secret.",
+                  "properties": {
+                    "name": {
+                      "default": "",
+                      "description": "The name of the existing secret.",
+                      "required": [],
+                      "title": "name",
+                      "type": "string"
+                    },
+                    "key": {
+                      "default": "",
+                      "description": "The key of the SSL private key in the existing secret.",
+                      "required": [],
+                      "title": "key",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "key"],
+                  "title": "existingPrivateKeySecret",
+                  "type": "object"
+                },
+                "rejectUnauthorized": {
+                  "default": true,
+                  "description": "If n8n should reject unauthorized SSL connections (true) or not (false).",
+                  "required": [],
+                  "title": "rejectUnauthorized",
+                  "type": "boolean"
+                }
+              },
+              "required": ["enabled", "base64EncodedCertificateAuthorityFile", "base64EncodedCertFile", "base64EncodedPrivateKeyFile", "existingCertificateAuthorityFileSecret", "existingCertFileSecret", "existingPrivateKeyFileSecret", "rejectUnauthorized"],
+              "title": "ssl",
+              "type": "object"
+            }
+          },
+          "required": ["poolSize", "connectionTimeout", "idleConnectionTimeout", "schema", "ssl"],
+          "title": "postgresdb",
+          "type": "object"
+        },
+        "tablePrefix": {
+          "default": "",
+          "description": "Prefix to use for table names.",
+          "required": [],
+          "title": "tablePrefix",
+          "type": "string"
+        },
+        "type": {
+          "default": "sqlite",
+          "description": "Type of database to use. Valid values 'sqlite' | 'postgresdb'",
+          "required": [],
+          "title": "type",
+          "type": "string",
+          "enum": ["sqlite", "postgresdb"]
+        }
+      },
+      "required": ["tablePrefix", "type", "logging", "sqlite", "postgresdb"],
+      "title": "db",
+      "type": "object"
+    },
+    "defaultLocale": {
+      "default": "en",
+      "description": "A locale identifier, compatible with the Accept-Language header. n8n doesn't support regional identifiers, such as de-AT.",
+      "required": [],
+      "title": "defaultLocale",
+      "type": "string",
+      "enum": [
+        "af",
+        "am",
+        "as",
+        "be",
+        "bg",
+        "bs",
+        "ca",
+        "cs",
+        "cy",
+        "da",
+        "de",
+        "el",
+        "en",
+        "es",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fr",
+        "ga",
+        "gl",
+        "gu",
+        "he",
+        "hi",
+        "hr",
+        "hu",
+        "hy",
+        "id",
+        "is",
+        "it",
+        "ja",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "lb",
+        "lt",
+        "lv",
+        "mk",
+        "ml",
+        "mr",
+        "ms",
+        "mt",
+        "nb",
+        "ne",
+        "nl",
+        "nn",
+        "or",
+        "pa",
+        "pl",
+        "ro",
+        "ru",
+        "rw",
+        "si",
+        "sk",
+        "sl",
+        "sq",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "th",
+        "ti",
+        "tn",
+        "tr",
+        "uk",
+        "ur",
+        "vi",
+        "wo",
+        "xh",
+        "zu"
+      ]
+    },
+    "sentry": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Whether sentry is enabled.",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "backendDsn": {
+          "default": "",
+          "description": "Sentry DSN for backend.",
+          "required": [],
+          "title": "backendDsn",
+          "type": "string"
+        },
+        "frontendDsn": {
+          "default": "",
+          "description": "Sentry DSN for frontend.",
+          "required": [],
+          "title": "frontendDsn",
+          "type": "string"
+        },
+        "externalTaskRunnersDsn": {
+          "default": "",
+          "description": "Sentry DSN for external task runners.",
+          "required": [],
+          "title": "externalTaskRunnersDsn",
+          "type": "string"
+        }
+      },
+      "required": ["enabled", "backendDsn", "frontendDsn", "externalTaskRunnersDsn"],
+      "title": "sentry",
+      "type": "object"
+    },
+    "diagnostics": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Whether diagnostics are enabled.",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "backendConfig": {
+          "default": "1zPn7YoGC3ZXE9zLeTKLuQCB4F6;https://telemetry.n8n.io",
+          "description": "Diagnostics config for backend.",
+          "required": [],
+          "title": "backendConfig",
+          "type": "string"
+        },
+        "frontendConfig": {
+          "default": "1zPn9bgWPzlQc0p8Gj1uiK6DOTn;https://telemetry.n8n.io",
+          "description": "Diagnostics config for frontend.",
+          "required": [],
+          "title": "frontendConfig",
+          "type": "string"
+        },
+        "postHog": {
+          "additionalProperties": false,
+          "properties": {
+            "apiHost": {
+              "default": "https://ph.n8n.io",
+              "description": "API host for PostHog.",
+              "required": [],
+              "title": "apiHost",
+              "type": "string"
+            },
+            "apiKey": {
+              "default": "phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo",
+              "description": "API key for PostHog.",
+              "required": [],
+              "title": "apiKey",
+              "type": "string"
+            }
+          },
+          "required": ["apiKey", "apiHost"],
+          "title": "postHog",
+          "type": "object"
+        }
+      },
+      "required": ["enabled", "frontendConfig", "backendConfig", "postHog"],
+      "title": "diagnostics",
+      "type": "object"
+    },
+    "encryptionKey": {
+      "default": "",
+      "description": "If you install n8n first time, you can keep this empty and it will be auto generated and never change again. If you already have a encryption key generated before, please use it here.",
+      "required": [],
+      "title": "encryptionKey",
+      "type": "string"
+    },
+    "existingEncryptionKeySecret": {
+      "default": "",
+      "description": "The name of an existing secret with encryption key. The secret must contain a key with the name N8N_ENCRYPTION_KEY.",
+      "required": [],
+      "title": "existingEncryptionKeySecret",
+      "type": "string"
+    },
+    "externalPostgresql": {
+      "additionalProperties": false,
+      "description": "External PostgreSQL parameters",
+      "properties": {
+        "database": {
+          "default": "n8n",
+          "description": "The name of the external PostgreSQL database. For more information: https://docs.n8n.io/hosting/configuration/supported-databases-settings/#required-permissions",
+          "required": [],
+          "title": "database",
+          "type": "string"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "The name of an existing secret with PostgreSQL (must contain key `postgres-password`) and credentials.\nWhen it's set, the `externalPostgresql.password` parameter is ignored",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "host": {
+          "default": "",
+          "description": "External PostgreSQL server host",
+          "required": [],
+          "title": "host",
+          "type": "string"
+        },
+        "password": {
+          "default": "",
+          "description": "External PostgreSQL password",
+          "required": [],
+          "title": "password",
+          "type": "string"
+        },
+        "port": {
+          "default": 5432,
+          "description": "External PostgreSQL server port",
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        },
+        "username": {
+          "default": "postgres",
+          "description": "External PostgreSQL username",
+          "required": [],
+          "title": "username",
+          "type": "string"
+        }
+      },
+      "required": [
+        "host",
+        "username",
+        "password",
+        "port",
+        "database",
+        "existingSecret"
+      ],
+      "title": "externalPostgresql",
+      "type": "object"
+    },
+    "externalRedis": {
+      "additionalProperties": false,
+      "description": "External Redis parameters",
+      "properties": {
+        "database": {
+          "default": 0,
+          "description": "Redis database for Bull queue.",
+          "required": [],
+          "title": "database",
+          "type": "integer"
+        },
+        "host": {
+          "default": "",
+          "description": "External Redis server host",
+          "required": [],
+          "title": "host",
+          "type": "string"
+        },
+        "username": {
+          "default": "",
+          "description": "External Redis username",
+          "required": [],
+          "title": "username",
+          "type": "string"
+        },
+        "password": {
+          "default": "",
+          "description": "External Redis password",
+          "required": [],
+          "title": "password",
+          "type": "string"
+        },
+        "port": {
+          "default": 6379,
+          "description": "External Redis server port",
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "The name of an existing secret with Redis (must contain key `redis-password`) and Sentinel credentials.\nWhen it's set, the `externalRedis.password` parameter is ignored",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "clusterNodes": {
+          "description": "List of Redis Cluster nodes. Setting this variable will create a Redis Cluster client instead of a Redis client, and n8n will ignore `externalRedis.host` and `externalRedis.port`.",
+          "items": {
+            "additionalProperties": false,
+            "description": "Redis Cluster node",
+            "properties": {
+              "host": {
+                "default": "",
+                "description": "External Redis server host",
+                "required": [],
+                "title": "host",
+                "type": "string"
+              },
+              "port": {
+                "default": 6379,
+                "description": "External Redis server port",
+                "required": [],
+                "title": "port",
+                "type": "integer"
+              }
+            },
+            "required": ["host", "port"],
+            "title": "clusterNode",
+            "type": "object"
+          },
+          "required": [],
+          "title": "clusterNodes",
+          "type": "array"
+        },
+        "tls": {
+          "additionalProperties": false,
+          "description": "Placeholder for future Redis TLS certificates.",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether to enable TLS on Redis connections.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": ["enabled"],
+          "title": "tls",
+          "type": "object"
+        },
+        "dualStack": {
+          "default": false,
+          "description": "Enable dual-stack support (IPv4 and IPv6) on Redis connections.",
+          "required": [],
+          "title": "dualStack",
+          "type": "boolean"
+        }
+      },
+      "required": ["database", "host", "username", "password", "port", "existingSecret", "clusterNodes", "tls", "dualStack"],
+      "title": "externalRedis",
+      "type": "object"
+    },
+    "extraEnvVars": {
+      "additionalProperties": true,
+      "description": "DEPRECATED: Use main, worker, and webhook blocks extraEnvVars fields instead. This field will be removed in a future release.",
+      "required": [],
+      "title": "extraEnvVars",
+      "type": "object"
+    },
+    "extraSecretNamesForEnvFrom": {
+      "description": "DEPRECATED: Use main, worker, and webhook blocks extraSecretNamesForEnvFrom fields instead. This field will be removed in a future release.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraSecretNamesForEnvFrom",
+      "type": "array"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "gracefulShutdownTimeout": {
+      "default": 30,
+      "description": "graceful shutdown timeout in seconds",
+      "required": [],
+      "title": "gracefulShutdownTimeout",
+      "type": "integer",
+      "minimum": 10
+    },
+    "image": {
+      "additionalProperties": false,
+      "description": "This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/",
+      "properties": {
+        "pullPolicy": {
+          "default": "IfNotPresent",
+          "description": "This sets the pull policy for images.",
+          "required": [],
+          "title": "pullPolicy",
+          "type": "string"
+        },
+        "repository": {
+          "default": "n8nio/n8n",
+          "required": [],
+          "title": "repository",
+          "type": "string"
+        },
+        "tag": {
+          "default": "",
+          "description": "Overrides the image tag whose default is the chart appVersion.",
+          "required": [],
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": ["repository", "pullPolicy", "tag"],
+      "title": "image",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "description": "This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "imagePullSecrets",
+      "type": "array"
+    },
+    "ingress": {
+      "additionalProperties": false,
+      "description": "This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/",
+      "properties": {
+        "annotations": {
+          "additionalProperties": true,
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "className": {
+          "default": "",
+          "required": [],
+          "title": "className",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "hosts": {
+          "description": "kubernetes.io/ingress.class: nginx\nkubernetes.io/tls-acme: \"true\"",
+          "items": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "host": {
+                    "default": "n8n.local",
+                    "required": [],
+                    "title": "host",
+                    "type": "string"
+                  },
+                  "paths": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "path": {
+                              "default": "/",
+                              "required": [],
+                              "title": "path",
+                              "type": "string"
+                            },
+                            "pathType": {
+                              "default": "Prefix",
+                              "required": [],
+                              "title": "pathType",
+                              "type": "string"
+                            }
+                          },
+                          "required": ["path", "pathType"],
+                          "type": "object"
+                        }
+                      ],
+                      "required": []
+                    },
+                    "required": [],
+                    "title": "paths",
+                    "type": "array"
+                  }
+                },
+                "required": ["host", "paths"],
+                "type": "object"
+              }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "hosts",
+          "type": "array"
+        },
+        "tls": {
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tls",
+          "type": "array"
+        }
+      },
+      "required": ["enabled", "className", "annotations", "hosts", "tls"],
+      "title": "ingress",
+      "type": "object"
+    },
+    "livenessProbe": {
+      "additionalProperties": true,
+      "description": "DEPRECATED: Use main, worker, and webhook blocks livenessProbe field instead. This field will be removed in a future release.",
+      "properties": {
+        "httpGet": {
+          "additionalProperties": true,
+          "properties": {
+            "path": {
+              "default": "/healthz",
+              "required": [],
+              "title": "path",
+              "type": "string"
+            },
+            "port": {
+              "default": "http",
+              "required": [],
+              "title": "port",
+              "type": "string"
+            }
+          },
+          "required": ["path", "port"],
+          "title": "httpGet",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "livenessProbe",
+      "type": "object"
+    },
+    "log": {
+      "additionalProperties": false,
+      "description": "n8n log configurations",
+      "properties": {
+        "file": {
+          "additionalProperties": false,
+          "properties": {
+            "location": {
+              "default": "logs/n8n.log",
+              "description": "Location of the log files inside `~/.n8n`. Only for `file` log output.",
+              "required": [],
+              "title": "location",
+              "type": "string"
+            },
+            "maxcount": {
+              "default": "100",
+              "description": "Max number of log files to keep, or max number of days to keep logs for. Once the limit is reached, the oldest log files will be rotated out. If using days, append a `d` suffix. Only for `file` log output.",
+              "required": [],
+              "title": "maxcount",
+              "type": "string",
+              "pattern": "^(d\\d+|\\d+)$"
+            },
+            "maxsize": {
+              "default": 16,
+              "description": "The maximum size (in MB) for each log file. By default, n8n uses 16 MB.",
+              "required": [],
+              "title": "maxsize",
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": ["location", "maxsize", "maxcount"],
+          "title": "file",
+          "type": "object"
+        },
+        "level": {
+          "default": "info",
+          "description": "The log output level. The available options are (from lowest to highest level) are error, warn, info, and debug. The default value is info. You can learn more about these options [here](https://docs.n8n.io/hosting/logging-monitoring/logging/#log-levels).",
+          "required": [],
+          "title": "level",
+          "type": "string",
+          "enum": ["error", "warn", "info", "debug"]
+        },
+        "output": {
+          "description": "Where to output logs to. Options are: `console` or `file` or both.",
+          "items": {
+            "type": "string",
+            "enum": ["console", "file"]
+          },
+          "required": [],
+          "title": "output",
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "scopes": {
+          "description": "Scopes to filter logs by. Nothing is filtered by default. Supported log scopes: concurrency, external-secrets, license, multi-main-setup, pubsub, redis, scaling, waiting-executions",
+          "items": {
+            "type": "string",
+            "enum": [
+              "concurrency",
+              "external-secrets",
+              "license",
+              "multi-main-setup",
+              "pubsub",
+              "redis",
+              "scaling",
+              "waiting-executions"
+            ]
+          },
+          "uniqueItems": true,
+          "required": [],
+          "title": "scopes",
+          "type": "array"
+        }
+      },
+      "required": ["level", "output", "scopes", "file"],
+      "title": "log",
+      "type": "object"
+    },
+    "nodes": {
+      "additionalProperties": false,
+      "description": "Node configurations for built-in and external npm packages",
+      "properties": {
+        "builtin": {
+          "additionalProperties": false,
+          "description": "Enable built-in node functions (e.g., HTTP Request, Code Node, etc.)",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable built-in modules for the Code node",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "modules": {
+              "default": [],
+              "description": "List of built-in Node.js modules to allow in the Code node (e.g., crypto, fs). Use '*' to allow all.",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true,
+              "minItems": 0,
+              "required": [],
+              "title": "modules",
+              "type": "array"
+            }
+          }
+        },
+        "external": {
+          "additionalProperties": false,
+          "description": "External npm packages to install and allow in the Code node",
+          "properties": {
+            "allowAll": {
+              "default": false,
+              "description": "Allow all external npm packages",
+              "required": [],
+              "title": "allowAll",
+              "type": "boolean"
+            },
+            "reinstallMissingPackages": {
+              "default": false,
+              "description": "Whether to reinstall missing packages. For more information, see https://docs.n8n.io/integrations/community-nodes/troubleshooting/#error-missing-packages",
+              "required": [],
+              "title": "reinstallMissingPackages",
+              "type": "boolean"
+            },
+            "packages": {
+              "default": [],
+              "description": "List of npm package names and versions (e.g., \"package-name@1.0.0\")",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true,
+              "minItems": 0,
+              "required": [],
+              "title": "packages",
+              "type": "array"
+            }
+          },
+          "required": ["allowAll", "reinstallMissingPackages", "packages"],
+          "title": "external",
+          "type": "object"
+        },
+        "initContainer": {
+          "additionalProperties": false,
+          "description": "Image for the init container to install npm packages",
+          "properties": {
+            "image": {
+              "additionalProperties": false,
+              "description": "Image for the init container to install npm packages",
+              "properties": {
+                "repository": {
+                  "default": "node",
+                  "description": "Repository for the init container to install npm packages",
+                  "required": [],
+                  "title": "repository",
+                  "type": "string"
+                },
+                "tag": {
+                  "default": "20-alpine",
+                  "description": "Tag for the init container to install npm packages",
+                  "required": [],
+                  "title": "tag",
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "default": "IfNotPresent",
+                  "description": "Pull policy for the init container to install npm packages",
+                  "required": [],
+                  "title": "pullPolicy",
+                  "type": "string"
+                }
+              },
+              "required": ["repository", "tag", "pullPolicy"],
+              "title": "image",
+              "type": "object"
+            },
+            "resources": {
+              "additionalProperties": true,
+              "description": "This block is for setting up the resource management for the init container more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+              "properties": {
+                "limits": {
+                  "additionalProperties": true,
+                  "description": "This block is for setting up the resource management for the init container more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "description": "CPU for the init container to install npm packages",
+                      "required": [],
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "description": "Memory for the init container to install npm packages",
+                      "required": [],
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "additionalProperties": true,
+                  "description": "This block is for setting up the resource management for the init container more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "description": "CPU for the init container to install npm packages",
+                      "required": [],
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "description": "Memory for the init container to install npm packages",
+                      "required": [],
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            }
+          },
+          "required": ["image", "resources"],
+          "title": "initContainer",
+          "type": "object"
+        }
+      },
+      "required": ["initContainer"],
+      "title": "nodes",
+      "type": "object"
+    },
+    "npmRegistry": {
+      "type": "object",
+      "title": "npmRegistry",
+      "description": "Configuration for private npm registry",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "enabled",
+          "description": "Enable private npm registry",
+          "default": false
+        },
+        "url": {
+          "type": "string",
+          "title": "url",
+          "description": "URL of the private npm registry (e.g., https://registry.npmjs.org/)",
+          "default": ""
+        },
+        "secretName": {
+          "type": "string",
+          "title": "secretName",
+          "description": "Name of the Kubernetes secret containing npm registry credentials",
+          "default": ""
+        },
+        "secretKey": {
+          "type": "string",
+          "title": "secretKey",
+          "description": "Key in the secret for the .npmrc content or auth token",
+          "default": "npmrc"
+        },
+        "customNpmrc": {
+          "type": "string",
+          "title": "customNpmrc",
+          "description": "Custom .npmrc content (optional, overrides secret if provided)",
+          "default": ""
+        }
+      },
+      "required": ["enabled", "url", "secretName", "secretKey", "customNpmrc"]
+    },
+    "license": {
+      "additionalProperties": false,
+      "description": "n8n license configurations",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Whether to enable the license",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "activationKey": {
+          "description": "Activation key to initialize license. Not applicable if the n8n instance was already activated. For more information please refer to the following link: https://docs.n8n.io/enterprise-key/",
+          "required": [],
+          "title": "activationKey",
+          "type": "string"
+        },
+        "existingActivationKeySecret": {
+          "description": "The name of an existing secret with license activation key. The secret must contain a key with the name N8N_LICENSE_ACTIVATION_KEY.",
+          "required": [],
+          "title": "existingActivationKeySecret",
+          "type": "string"
+        },
+        "autoNenew": {
+          "description": "The auto new license configuration",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enables (true) or disables (false) autorenewal for licenses. If disabled, you need to manually renew the license every 10 days by navigating to Settings > Usage and plan, and pressing F5. Failure to renew the license will disable Enterprise features.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "offsetInHours": {
+              "default": 72,
+              "description": "The offset in hours before expiry a license should automatically renew. The default value is 72 hours (3 days).",
+              "required": [],
+              "title": "offsetInHours",
+              "type": "integer"
+            }
+          },
+          "required": ["enabled", "offsetInHours"],
+          "title": "autoNenew",
+          "type": "object"
+        },
+        "serverUrl": {
+          "description": "Server URL to retrieve license. The default value is https://license.n8n.io/v1.",
+          "required": [],
+          "title": "serverUrl",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "Tenant ID associated with the license. Only set this variable if explicitly instructed by n8n.",
+          "required": [],
+          "title": "tenantId",
+          "type": "integer"
+        }
+      },
+      "required": ["enabled", "activationKey", "existingActivationKeySecret", "autoNenew", "serverUrl", "tenantId"],
+      "title": "license",
+      "type": "object"
+    },
+    "main": {
+      "additionalProperties": false,
+      "description": "Main node configuration",
+      "properties": {
+        "count": {
+          "default": 1,
+          "description": "Number of main nodes. Only enterprise license users can have one leader main node and mutiple follower main nodes.",
+          "required": [],
+          "title": "count",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "editorBaseUrl": {
+          "default": "",
+          "description": "Editor based URL. If it's not defined and ingress definition exists, ingress host will be used.",
+          "required": [],
+          "title": "editorBaseUrl",
+          "type": "string"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "description": "PodDisruptionBudget configuration for the main node",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Whether to enable the PodDisruptionBudget for the main node",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "minAvailable": {
+              "default": 1,
+              "description": "Minimum number of available replicas for the main node",
+              "required": [],
+              "title": "minAvailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxUnavailable": {
+              "default": null,
+              "description": "Maximum number of unavailable replicas for the main node",
+              "required": [],
+              "title": "maxUnavailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["enabled"],
+          "title": "pdb",
+          "type": "object",
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": ["enabled"]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "minAvailable": { "type": "null" },
+                "maxUnavailable": { "type": "null" }
+              },
+              "required": ["minAvailable", "maxUnavailable"]
+            }
+          }
+        },
+        "resources": {
+          "additionalProperties": true,
+          "description": "This block is for setting up the resource management for the pod more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "properties": {
+            "limits": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "2000m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "2Gi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "livenessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the liveness probe for the main pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "livenessProbe",
+          "type": "object"
+        },
+        "readinessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the readiness probe for the main pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz/readiness",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "forceToUseStatefulset": {
+          "default": false,
+          "description": "Force to use statefulset for the main pod. If true, the main pod will be created as a statefulset.",
+          "required": [],
+          "title": "forceToUseStatefulset",
+          "type": "boolean"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "description": "Persistence configuration for the main pod",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether to enable persistence",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "volumeName": {
+              "default": "",
+              "description": "Name of the volume to use for persistence",
+              "required": [],
+              "title": "volumeName",
+              "type": "string"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Existing claim to use for persistence",
+              "required": [],
+              "title": "existingClaim",
+              "type": "string"
+            },
+            "mountPath": {
+              "default": "",
+              "description": "Mount path for persistence",
+              "required": [],
+              "title": "mountPath",
+              "type": "string"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Sub path for persistence",
+              "required": [],
+              "title": "subPath",
+              "type": "string"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistence",
+              "required": [],
+              "title": "storageClass",
+              "type": "string"
+            },
+            "accessMode": {
+              "description": "Access mode for persistence",
+              "enum": ["ReadWriteOnce", "ReadWriteMany"],
+              "required": [],
+              "title": "accessMode",
+              "type": "string"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size for persistence",
+              "required": [],
+              "title": "size",
+              "type": "string"
+            },
+            "annotations": {
+              "additionalProperties": true,
+              "description": "Annotations for persistence",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": true,
+              "description": "Labels for persistence",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            }
+          },
+          "required": ["enabled", "volumeName", "existingClaim", "mountPath", "subPath", "storageClass", "accessMode", "size", "annotations", "labels"],
+          "title": "persistence",
+          "type": "object"
+        },
+        "extraEnvVars": {
+          "additionalProperties": true,
+          "description": "Extra environment variables",
+          "required": [],
+          "title": "extraEnvVars",
+          "type": "object"
+        },
+        "extraSecretNamesForEnvFrom": {
+          "description": "Extra secrets for environment variables",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraSecretNamesForEnvFrom",
+          "type": "array"
+        },
+        "volumes": {
+          "description": "Additional volumes on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes",
+          "type": "array"
+        },
+        "volumeMounts": {
+          "description": "Additional volumeMounts on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts",
+          "type": "array"
+        },
+        "initContainers": {
+          "description": "Additional init containers for the main pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "initContainers",
+          "type": "array"
+        },
+        "extraContainers": {
+          "description": "Additional containers for the main pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraContainers",
+          "type": "array"
+        },
+        "affinity": {
+          "additionalProperties": true,
+          "description": "For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "hostAliases": {
+          "description": "Host aliases for the main pod. For more information checkout: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/#adding-additional-entries-with-hostaliases",
+          "items": {
+            "type": "object",
+            "required": ["ip", "hostnames"],
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "IP address for the host alias"
+              },
+              "hostnames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of hostnames to associate with the IP address"
+              }
+            },
+            "additionalProperties": false
+          },
+          "required": [],
+          "title": "hostAliases",
+          "type": "array"
+        },
+        "runtimeClassName": {
+          "description": "Runtime class name for the main pod. For more information checkout: https://kubernetes.io/docs/concepts/containers/runtime-class/",
+          "required": [],
+          "title": "runtimeClassName",
+          "type": "string"
+        }
+      },
+      "required": ["count", "editorBaseUrl", "resources", "livenessProbe", "readinessProbe", "forceToUseStatefulset", "persistence", "extraEnvVars", "extraSecretNamesForEnvFrom", "volumes", "volumeMounts", "pdb", "initContainers", "extraContainers", "affinity", "hostAliases", "runtimeClassName"],
+      "title": "main",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "This is to override the chart name.",
+      "required": [],
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "nodeSelector": {
+      "additionalProperties": true,
+      "description": "For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector",
+      "required": [],
+      "title": "nodeSelector",
+      "type": "object"
+    },
+    "podAnnotations": {
+      "additionalProperties": true,
+      "description": "This is for setting Kubernetes Annotations to a Pod. For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/",
+      "required": [],
+      "title": "podAnnotations",
+      "type": "object"
+    },
+    "podLabels": {
+      "additionalProperties": true,
+      "description": "This is for setting Kubernetes Labels to a Pod. For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/",
+      "required": [],
+      "title": "podLabels",
+      "type": "object"
+    },
+    "podSecurityContext": {
+      "additionalProperties": true,
+      "description": "This is for setting Security Context to a Pod. For more information checkout: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/",
+      "properties": {
+        "runAsUser": {
+          "default": 1000,
+          "required": [],
+          "title": "runAsUser",
+          "type": "integer"
+        },
+        "runAsGroup": {
+          "default": 3000,
+          "required": [],
+          "title": "runAsGroup",
+          "type": "integer"
+        },
+        "fsGroup": {
+          "default": 2000,
+          "required": [],
+          "title": "fsGroup",
+          "type": "integer"
+        },
+        "supplementalGroups": {
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "runAsUser",
+          "type": "array"
+        },
+        "fsGroupChangePolicy": {
+          "default": "OnRootMismatch",
+          "required": [],
+          "title": "fsGroupChangePolicy",
+          "type": "string",
+          "enum": ["OnRootMismatch", "Always"]
+        }
+      },
+      "required": [],
+      "title": "podSecurityContext",
+      "type": "object"
+    },
+    "postgresql": {
+      "additionalProperties": true,
+      "description": "Bitnami PostgreSQL configuration",
+      "properties": {
+        "architecture": {
+          "default": "standalone",
+          "required": [],
+          "title": "architecture",
+          "type": "string"
+        },
+        "auth": {
+          "additionalProperties": true,
+          "properties": {
+            "database": {
+              "default": "n8n",
+              "description": "The name of the PostgreSQL database. For more information: https://docs.n8n.io/hosting/configuration/supported-databases-settings/#required-permissions",
+              "required": [],
+              "title": "database",
+              "type": "string"
+            },
+            "password": {
+              "default": "",
+              "required": [],
+              "title": "password",
+              "type": "string"
+            },
+            "username": {
+              "default": "",
+              "required": [],
+              "title": "username",
+              "type": "string"
+            }
+          },
+          "required": ["username", "password", "database"],
+          "title": "auth",
+          "type": "object"
+        },
+        "enabled": {
+          "default": false,
+          "description": "Enable postgresql",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "primary": {
+          "additionalProperties": true,
+          "properties": {
+            "persistence": {
+              "additionalProperties": true,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "required": [],
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "existingClaim": {
+                  "default": "",
+                  "required": [],
+                  "title": "existingClaim",
+                  "type": "string"
+                }
+              },
+              "required": ["enabled", "existingClaim"],
+              "title": "persistence",
+              "type": "object"
+            },
+            "service": {
+              "additionalProperties": true,
+              "properties": {
+                "ports": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "postgresql": {
+                      "default": 5432,
+                      "required": [],
+                      "title": "postgresql",
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["postgresql"],
+                  "title": "ports",
+                  "type": "object"
+                }
+              },
+              "required": ["ports"],
+              "title": "service",
+              "type": "object"
+            }
+          },
+          "required": ["service", "persistence"],
+          "title": "primary",
+          "type": "object"
+        }
+      },
+      "required": ["enabled", "architecture", "primary", "auth"],
+      "title": "postgresql",
+      "type": "object"
+    },
+    "readinessProbe": {
+      "additionalProperties": true,
+      "description": "DEPRECATED: Use main, worker, and webhook blocks readinessProbe field instead. This field will be removed in a future release.",
+      "properties": {
+        "httpGet": {
+          "additionalProperties": true,
+          "properties": {
+            "path": {
+              "default": "/healthz/readiness",
+              "required": [],
+              "title": "path",
+              "type": "string"
+            },
+            "port": {
+              "default": "http",
+              "required": [],
+              "title": "port",
+              "type": "string"
+            }
+          },
+          "required": ["path", "port"],
+          "title": "httpGet",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "readinessProbe",
+      "type": "object"
+    },
+    "redis": {
+      "additionalProperties": true,
+      "description": "Bitnami Redis configuration",
+      "properties": {
+        "architecture": {
+          "default": "standalone",
+          "required": [],
+          "title": "architecture",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "description": "Enable redis",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "master": {
+          "additionalProperties": true,
+          "properties": {
+            "persistence": {
+              "additionalProperties": true,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "required": [],
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": ["enabled"],
+              "title": "persistence",
+              "type": "object"
+            }
+          },
+          "required": ["persistence"],
+          "title": "master",
+          "type": "object"
+        }
+      },
+      "required": ["enabled", "architecture", "master"],
+      "title": "redis",
+      "type": "object"
+    },
+    "resources": {
+      "additionalProperties": true,
+      "description": "DEPRECATED: Use main, worker, and webhook blocks resources fields instead. This field will be removed in a future release.",
+      "properties": {
+        "limits": {
+          "additionalProperties": true,
+          "properties": {
+            "cpu": {
+              "default": "2000m",
+              "required": [],
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "2Gi",
+              "required": [],
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "limits",
+          "type": "object"
+        },
+        "requests": {
+          "additionalProperties": true,
+          "properties": {
+            "cpu": {
+              "default": "100m",
+              "required": [],
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "128Mi",
+              "required": [],
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "requests",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "resources",
+      "type": "object"
+    },
+    "securityContext": {
+      "additionalProperties": true,
+      "description": "This is for setting Security Context to a Container. For more information checkout: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/",
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "default": false,
+          "required": [],
+          "title": "allowPrivilegeEscalation",
+          "type": "boolean"
+        },
+        "readOnlyRootFilesystem": {
+          "default": true,
+          "required": [],
+          "title": "readOnlyRootFilesystem",
+          "type": "boolean"
+        },
+        "runAsNonRoot": {
+          "default": true,
+          "required": [],
+          "title": "runAsNonRoot",
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "default": 1000,
+          "required": [],
+          "title": "runAsUser",
+          "type": "integer"
+        },
+        "capabilities": {
+          "additionalProperties": true,
+          "properties": {
+            "drop": {
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "drop",
+              "type": "array"
+            },
+            "add": {
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "add",
+              "type": "array"
+            }
+          },
+          "required": [],
+          "title": "capabilities",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "securityContext",
+      "type": "object"
+    },
+    "service": {
+      "additionalProperties": false,
+      "description": "This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Whether to enable the service",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "annotations": {
+          "additionalProperties": true,
+          "description": "Additional service annotations",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "labels": {
+          "additionalProperties": true,
+          "description": "Additional service labels",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "name": {
+          "default": "http",
+          "description": "Default Service name",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "port": {
+          "default": 5678,
+          "description": "This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports",
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        },
+        "type": {
+          "default": "ClusterIP",
+          "description": "This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types",
+          "required": [],
+          "title": "type",
+          "type": "string"
+        }
+      },
+      "required": ["enabled", "type", "port", "name", "annotations", "labels"],
+      "title": "service",
+      "type": "object"
+    },
+    "serviceAccount": {
+      "additionalProperties": false,
+      "description": "This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/",
+      "properties": {
+        "annotations": {
+          "additionalProperties": true,
+          "description": "Annotations to add to the service account",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "automount": {
+          "default": true,
+          "description": "Automatically mount a ServiceAccount's API credentials?",
+          "required": [],
+          "title": "automount",
+          "type": "boolean"
+        },
+        "create": {
+          "default": true,
+          "description": "Specifies whether a service account should be created",
+          "required": [],
+          "title": "create",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "description": "The name of the service account to use. If not set and create is true, a name is generated using the fullname template",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": ["create", "automount", "annotations", "name"],
+      "title": "serviceAccount",
+      "type": "object"
+    },
+    "strategy": {
+      "additionalProperties": true,
+      "description": "This will set the deployment strategy more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy",
+      "properties": {
+        "type": {
+          "default": "RollingUpdate",
+          "required": [],
+          "title": "type",
+          "type": "string",
+          "enum": ["RollingUpdate", "Recreate"]
+        }
+      },
+      "required": ["type"],
+      "title": "strategy",
+      "type": "object"
+    },
+    "timezone": {
+      "default": "Europe/Berlin",
+      "description": "For instance, the Schedule node uses it to know at what time the workflow should start. Find you timezone from here: https://momentjs.com/timezone/",
+      "required": [],
+      "title": "timezone",
+      "type": "string",
+      "pattern": "^[A-Za-z_]+(?:\\/[-A-Za-z_]+(?:\\/[-A-Za-z_]+)?)?$"
+    },
+    "tolerations": {
+      "description": "For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "tolerations",
+      "type": "array"
+    },
+    "versionNotifications": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Whether to request notifications about new n8n versions",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "endpoint": {
+          "default": "https://api.n8n.io/api/versions/",
+          "description": "Endpoint to retrieve n8n version information from",
+          "required": [],
+          "title": "endpoint",
+          "type": "string"
+        },
+        "infoUrl": {
+          "default": "https://docs.n8n.io/hosting/installation/updating/",
+          "description": "URL for versions panel to page instructing user on how to update n8n instance",
+          "required": [],
+          "title": "infoUrl",
+          "type": "string"
+        }
+      },
+      "required": ["enabled", "endpoint", "infoUrl"],
+      "title": "versionNotifications",
+      "type": "object"
+    },
+    "volumeMounts": {
+      "description": "DEPRECATED: Use main, worker, and webhook blocks volumeMounts fields instead. This field will be removed in a future release.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "volumeMounts",
+      "type": "array"
+    },
+    "volumes": {
+      "description": "DEPRECATED: Use main, worker, and webhook blocks volumes fields instead. This field will be removed in a future release.",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "volumes",
+      "type": "array"
+    },
+    "webhook": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "default": 2,
+          "description": "number of webhooks",
+          "required": [],
+          "title": "count",
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "default": "regular",
+          "description": "Use `regular` to use main node as webhook node, or use `queue` to have webhook nodes",
+          "required": [],
+          "title": "mode",
+          "type": "string",
+          "enum": ["regular", "queue"]
+        },
+        "allNodes": {
+          "default": false,
+          "description": "If true, all k8s nodes will deploy exatly one worker pod",
+          "required": [],
+          "title": "allNodes",
+          "type": "boolean"
+        },
+        "mcp": {
+          "additionalProperties": false,
+          "description": "MCP webhook configuration. This is only used when the webhook mode is set to `queue` and the database type is set to `postgresdb`.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Whether to enable MCP webhook",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "resources": {
+              "additionalProperties": true,
+              "description": "This block is for setting up the resource management for the mcp webhook pod more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+              "properties": {
+                "limits": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "cpu": {
+                      "default": "2000m",
+                      "required": [],
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "2Gi",
+                      "required": [],
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "required": [],
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "required": [],
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "resources",
+              "type": "object"
+            },
+            "startupProbe": {
+              "additionalProperties": true,
+              "description": "This is to setup the startup probe for the mcp webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+              "properties": {
+                "exec": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "command": {
+                      "default": ["/bin/sh", "-c", "ps aux | grep '[n]8n'"],
+                      "required": [],
+                      "title": "command",
+                      "type": "array"
+                    }
+                  },
+                  "required": ["command"],
+                  "title": "exec",
+                  "type": "object"
+                },
+                "initialDelaySeconds": {
+                  "default": 10,
+                  "required": [],
+                  "title": "initialDelaySeconds",
+                  "type": "integer"
+                },
+                "periodSeconds": {
+                  "default": 5,
+                  "required": [],
+                  "title": "periodSeconds",
+                  "type": "integer"
+                },
+                "failureThreshold": {
+                  "default": 30,
+                  "required": [],
+                  "title": "failureThreshold",
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "title": "startupProbe",
+              "type": "object"
+            },
+            "livenessProbe": {
+              "additionalProperties": true,
+              "description": "This is to setup the liveness probe for the mcp webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+              "properties": {
+                "httpGet": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "path": {
+                      "default": "/healthz",
+                      "required": [],
+                      "title": "path",
+                      "type": "string"
+                    },
+                    "port": {
+                      "default": "http",
+                      "required": [],
+                      "title": "port",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["path", "port"],
+                  "title": "httpGet",
+                  "type": "object"
+                }
+              },
+              "required": ["httpGet"],
+              "title": "livenessProbe",
+              "type": "object"
+            },
+            "readinessProbe": {
+              "additionalProperties": true,
+              "description": "This is to setup the readiness probe for the mcp webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+              "properties": {
+                "httpGet": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "path": {
+                      "default": "/healthz/readiness",
+                      "required": [],
+                      "title": "path",
+                      "type": "string"
+                    },
+                    "port": {
+                      "default": "http",
+                      "required": [],
+                      "title": "port",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["path", "port"],
+                  "title": "httpGet",
+                  "type": "object"
+                }
+              },
+              "required": ["httpGet"],
+              "title": "readinessProbe",
+              "type": "object"
+            },
+            "extraEnvVars": {
+              "additionalProperties": true,
+              "description": "Extra environment variables for the mcp webhook pod",
+              "required": [],
+              "title": "extraEnvVars",
+              "type": "object"
+            },
+            "extraSecretNamesForEnvFrom": {
+              "description": "Extra secrets for environment variables for the mcp webhook pod",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraSecretNamesForEnvFrom",
+              "type": "array"
+            },
+            "volumes": {
+              "description": "Additional volumes on the output Deployment definition for the mcp webhook pod.",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "volumes",
+              "type": "array"
+            },
+            "volumeMounts": {
+              "description": "Additional volumeMounts on the output Deployment definition for the mcp webhook pod.",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "volumeMounts",
+              "type": "array"
+            },
+            "initContainers": {
+              "description": "Additional init containers for the mcp webhook pod",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "initContainers",
+              "type": "array"
+            },
+            "extraContainers": {
+              "description": "Additional containers for the mcp webhook pod",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraContainers",
+              "type": "array"
+            },
+            "affinity": {
+              "additionalProperties": true,
+              "description": "Webhook node affinity for the mcp webhook pod. For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity",
+              "required": [],
+              "title": "affinity",
+              "type": "object"
+            },
+            "hostAliases": {
+              "description": "Host aliases for the mcp webhook pod. For more information checkout: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/#adding-additional-entries-with-hostaliases",
+              "items": {
+                "type": "object",
+                "required": ["ip", "hostnames"],
+                "properties": {
+                  "ip": {
+                    "type": "string",
+                    "description": "IP address for the host alias"
+                  },
+                  "hostnames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of hostnames to associate with the IP address"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "required": [],
+              "title": "hostAliases",
+              "type": "array"
+            }
+          },
+          "required": ["enabled", "resources", "startupProbe", "livenessProbe", "readinessProbe", "extraEnvVars", "extraSecretNamesForEnvFrom", "volumes", "volumeMounts", "initContainers", "extraContainers", "affinity", "hostAliases"],
+          "title": "mcp",
+          "type": "object"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "If true, the number of workers will be automatically scaled based on default metrics. On default, it will scale based on CPU and memory. For more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "minReplicas": {
+              "default": 1,
+              "description": "Minimum number of workers",
+              "required": [],
+              "title": "minReplicas",
+              "type": "integer"
+            },
+            "maxReplicas": {
+              "default": 10,
+              "description": "Maximum number of workers",
+              "required": [],
+              "title": "maxReplicas",
+              "type": "integer"
+            },
+            "metrics": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["Resource", "Pods", "Object", "External"]
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "type": { "const": "Resource" },
+                      "resource": {
+                        "type": "object",
+                        "required": ["name", "target"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "enum": ["cpu", "memory"]
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": ["Utilization", "AverageValue", "Value"]
+                              },
+                              "averageUtilization": { "type": "integer", "minimum": 0 },
+                              "averageValue": { "type": "string" },
+                              "value": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Utilization" } } },
+                            "then": { "required": ["averageUtilization"] },
+                            "else": {
+                              "if": { "properties": { "type": { "const": "AverageValue" } } },
+                              "then": { "required": ["averageValue"] },
+                              "else": { "required": ["value"] }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["resource"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "Pods" },
+                      "pods": {
+                        "type": "object",
+                        "required": ["metric", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["AverageValue", "Value"] },
+                              "averageValue": { "type": "string" },
+                              "value": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "AverageValue" } } },
+                            "then": { "required": ["averageValue"] },
+                            "else": { "required": ["value"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["pods"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "Object" },
+                      "object": {
+                        "type": "object",
+                        "required": ["metric", "describedObject", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "describedObject": {
+                            "type": "object",
+                            "required": ["apiVersion", "kind", "name"],
+                            "properties": {
+                              "apiVersion": { "type": "string" },
+                              "kind": { "type": "string" },
+                              "name": { "type": "string" }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["Value", "AverageValue"] },
+                              "value": { "type": "string" },
+                              "averageValue": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Value" } } },
+                            "then": { "required": ["value"] },
+                            "else": { "required": ["averageValue"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["object"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "External" },
+                      "external": {
+                        "type": "object",
+                        "required": ["metric", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["Value", "AverageValue"] },
+                              "value": { "type": "string" },
+                              "averageValue": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Value" } } },
+                            "then": { "required": ["value"] },
+                            "else": { "required": ["averageValue"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["external"]
+                  }
+                ]
+              }
+            },
+            "behavior": {
+              "type": "object",
+              "properties": {
+                "scaleUp": {
+                  "type": "object",
+                  "properties": {
+                    "stabilizationWindowSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Time in seconds to wait before scaling up again (default: 0)"
+                    },
+                    "policies": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "minItems": 1,
+                        "required": ["type", "value", "periodSeconds"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["Pods", "Percent"],
+                            "description": "Type of scaling policy: Pods (fixed number) or Percent (percentage of current replicas)"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The value to scale by (number of pods or percentage)"
+                          },
+                          "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Time in seconds over which the policy is evaluated"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "description": "List of scaling policies for scale-up"
+                    },
+                    "selectPolicy": {
+                      "type": "string",
+                      "enum": ["Max", "Min", "Disabled"],
+                      "description": "Policy to select among multiple policies: Max (default), Min, or Disabled"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "scaleDown": {
+                  "type": "object",
+                  "properties": {
+                    "stabilizationWindowSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Time in seconds to wait before scaling down again (default: 300)"
+                    },
+                    "policies": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "minItems": 1,
+                        "required": ["type", "value", "periodSeconds"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["Pods", "Percent"],
+                            "description": "Type of scaling policy: Pods (fixed number) or Percent (percentage of current replicas)"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The value to scale by (number of pods or percentage)"
+                          },
+                          "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Time in seconds over which the policy is evaluated"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "description": "List of scaling policies for scale-down"
+                    },
+                    "selectPolicy": {
+                      "type": "string",
+                      "enum": ["Max", "Min", "Disabled"],
+                      "description": "Policy to select among multiple policies: Max (default), Min, or Disabled"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["enabled", "minReplicas", "maxReplicas", "metrics", "behavior"],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "description": "PodDisruptionBudget configuration for the worker node",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Whether to enable the PodDisruptionBudget for the worker node",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "minAvailable": {
+              "default": 1,
+              "description": "Minimum number of available replicas for the worker node",
+              "required": [],
+              "title": "minAvailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxUnavailable": {
+              "default": null,
+              "description": "Maximum number of unavailable replicas for the worker node",
+              "required": [],
+              "title": "maxUnavailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["enabled"],
+          "title": "pdb",
+          "type": "object",
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": ["enabled"]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "minAvailable": { "type": "null" },
+                "maxUnavailable": { "type": "null" }
+              },
+              "required": ["minAvailable", "maxUnavailable"]
+            }
+          }
+        },
+        "waitMainNodeReady": {
+          "additionalProperties": true,
+          "description": "This is to setup the wait for the main node to be ready.",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether to enable the wait for the main node to be ready.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "overwriteSchema": {
+              "default": "",
+              "description": "The schema to use for request to the main node. On default, it will use identify the schema from the main N8N_PROTOCOL environment variable or use http.",
+              "required": [],
+              "title": "overwriteSchema",
+              "type": "string"
+            },
+            "overwriteUrl": {
+              "default": "",
+              "description": "The URL to use for request to the main node. On default, it will use service name and port.",
+              "required": [],
+              "title": "overwriteUrl",
+              "type": "string"
+            },
+            "healthCheckPath": {
+              "default": "/healthz",
+              "description": "The health check path to use for request to the main node.",
+              "required": [],
+              "title": "healthCheckPath",
+              "type": "string"
+            },
+            "additionalParameters": {
+              "default": [],
+              "description": "The additional parameters to use part of wget command. e.g. --no-check-certificate",
+              "required": [],
+              "title": "additionalParameters",
+              "type": "array"
+            }
+          },
+          "required": ["enabled", "overwriteSchema", "overwriteUrl", "healthCheckPath", "additionalParameters"],
+          "title": "waitMainNodeReady",
+          "type": "object"
+        },
+        "url": {
+          "default": "",
+          "description": "Webhook url together with http schema",
+          "required": [],
+          "title": "url",
+          "type": "string"
+        },
+        "resources": {
+          "additionalProperties": true,
+          "description": "This block is for setting up the resource management for the pod more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "properties": {
+            "limits": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "2000m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "2Gi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "startupProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the startup probe for the webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "exec": {
+              "additionalProperties": true,
+              "properties": {
+                "command": {
+                  "default": ["/bin/sh", "-c", "ps aux | grep '[n]8n'"],
+                  "required": [],
+                  "title": "command",
+                  "type": "array"
+                }
+              },
+              "required": ["command"],
+              "title": "exec",
+              "type": "object"
+            },
+            "initialDelaySeconds": {
+              "default": 10,
+              "required": [],
+              "title": "initialDelaySeconds",
+              "type": "integer"
+            },
+            "periodSeconds": {
+              "default": 5,
+              "required": [],
+              "title": "periodSeconds",
+              "type": "integer"
+            },
+            "failureThreshold": {
+              "default": 30,
+              "required": [],
+              "title": "failureThreshold",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "title": "startupProbe",
+          "type": "object"
+        },
+        "livenessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the liveness probe for the webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "livenessProbe",
+          "type": "object"
+        },
+        "readinessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the readiness probe for the webhook pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz/readiness",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "extraEnvVars": {
+          "additionalProperties": true,
+          "description": "Extra environment variables",
+          "required": [],
+          "title": "extraEnvVars",
+          "type": "object"
+        },
+        "extraSecretNamesForEnvFrom": {
+          "description": "Extra secrets for environment variables",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraSecretNamesForEnvFrom",
+          "type": "array"
+        },
+        "volumes": {
+          "description": "Additional volumes on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes",
+          "type": "array"
+        },
+        "volumeMounts": {
+          "description": "Additional volumeMounts on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts",
+          "type": "array"
+        },
+        "initContainers": {
+          "description": "Additional init containers for the pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "initContainers",
+          "type": "array"
+        },
+        "extraContainers": {
+          "description": "Additional containers for the webhook pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraContainers",
+          "type": "array"
+        },
+        "affinity": {
+          "additionalProperties": true,
+          "description": "For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "hostAliases": {
+          "description": "Host aliases for the webhook pod. For more information checkout: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/#adding-additional-entries-with-hostaliases",
+          "items": {
+            "type": "object",
+            "required": ["ip", "hostnames"],
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "IP address for the host alias"
+              },
+              "hostnames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of hostnames to associate with the IP address"
+              }
+            },
+            "additionalProperties": false
+          },
+          "required": [],
+          "title": "hostAliases",
+          "type": "array"
+        },
+        "runtimeClassName": {
+          "description": "Runtime class name for the webhook pod. For more information checkout: https://kubernetes.io/docs/concepts/containers/runtime-class/",
+          "required": [],
+          "title": "runtimeClassName",
+          "type": "string"
+        }
+      },
+      "required": ["mode", "count", "url", "allNodes", "autoscaling", "resources", "startupProbe", "livenessProbe", "readinessProbe", "extraEnvVars", "extraSecretNamesForEnvFrom", "volumes", "volumeMounts", "pdb", "waitMainNodeReady", "initContainers", "extraContainers", "affinity", "hostAliases", "mcp", "runtimeClassName"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "allNodes": { "const": true },
+              "autoscaling": {
+                "properties": { "enabled": { "const": true } }
+              }
+            }
+          },
+          "then": {
+            "not": { "type": "object" },
+            "description": "allNodes and autoscaling.enabled cannot both be true"
+          }
+        }
+      ],
+      "title": "webhook",
+      "type": "object"
+    },
+    "worker": {
+      "additionalProperties": false,
+      "properties": {
+        "concurrency": {
+          "default": 10,
+          "description": "number of concurrency for each worker",
+          "required": [],
+          "title": "concurrency",
+          "type": "integer",
+          "minimum": 1
+        },
+        "count": {
+          "default": 2,
+          "description": "number of workers",
+          "required": [],
+          "title": "count",
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "default": "regular",
+          "description": "Use `regular` to use main node as executer, or use `queue` to have worker nodes",
+          "required": [],
+          "title": "mode",
+          "type": "string",
+          "enum": ["regular", "queue"]
+        },
+        "allNodes": {
+          "default": false,
+          "description": "If true, all k8s nodes will deploy exatly one worker pod",
+          "required": [],
+          "title": "allNodes",
+          "type": "boolean"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "If true, the number of workers will be automatically scaled based on default metrics. On default, it will scale based on CPU and memory. For more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "minReplicas": {
+              "default": 1,
+              "description": "Minimum number of workers",
+              "required": [],
+              "title": "minReplicas",
+              "type": "integer"
+            },
+            "maxReplicas": {
+              "default": 10,
+              "description": "Maximum number of workers",
+              "required": [],
+              "title": "maxReplicas",
+              "type": "integer"
+            },
+            "metrics": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["Resource", "Pods", "Object", "External"]
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "type": { "const": "Resource" },
+                      "resource": {
+                        "type": "object",
+                        "required": ["name", "target"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "enum": ["cpu", "memory"]
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": ["Utilization", "AverageValue", "Value"]
+                              },
+                              "averageUtilization": { "type": "integer", "minimum": 0 },
+                              "averageValue": { "type": "string" },
+                              "value": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Utilization" } } },
+                            "then": { "required": ["averageUtilization"] },
+                            "else": {
+                              "if": { "properties": { "type": { "const": "AverageValue" } } },
+                              "then": { "required": ["averageValue"] },
+                              "else": { "required": ["value"] }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["resource"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "Pods" },
+                      "pods": {
+                        "type": "object",
+                        "required": ["metric", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["AverageValue", "Value"] },
+                              "averageValue": { "type": "string" },
+                              "value": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "AverageValue" } } },
+                            "then": { "required": ["averageValue"] },
+                            "else": { "required": ["value"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["pods"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "Object" },
+                      "object": {
+                        "type": "object",
+                        "required": ["metric", "describedObject", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "describedObject": {
+                            "type": "object",
+                            "required": ["apiVersion", "kind", "name"],
+                            "properties": {
+                              "apiVersion": { "type": "string" },
+                              "kind": { "type": "string" },
+                              "name": { "type": "string" }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["Value", "AverageValue"] },
+                              "value": { "type": "string" },
+                              "averageValue": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Value" } } },
+                            "then": { "required": ["value"] },
+                            "else": { "required": ["averageValue"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["object"]
+                  },
+                  {
+                    "properties": {
+                      "type": { "const": "External" },
+                      "external": {
+                        "type": "object",
+                        "required": ["metric", "target"],
+                        "properties": {
+                          "metric": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                              "name": { "type": "string" },
+                              "selector": {
+                                "type": "object",
+                                "properties": {
+                                  "matchLabels": { "type": "object" },
+                                  "matchExpressions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": ["key", "operator"],
+                                      "properties": {
+                                        "key": { "type": "string" },
+                                        "operator": { "type": "string" },
+                                        "values": { "type": "array", "items": { "type": "string" } }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": { "type": "string", "enum": ["Value", "AverageValue"] },
+                              "value": { "type": "string" },
+                              "averageValue": { "type": "string" }
+                            },
+                            "if": { "properties": { "type": { "const": "Value" } } },
+                            "then": { "required": ["value"] },
+                            "else": { "required": ["averageValue"] }
+                          }
+                        }
+                      }
+                    },
+                    "required": ["external"]
+                  }
+                ]
+              }
+            },
+            "behavior": {
+              "type": "object",
+              "properties": {
+                "scaleUp": {
+                  "type": "object",
+                  "properties": {
+                    "stabilizationWindowSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Time in seconds to wait before scaling up again (default: 0)"
+                    },
+                    "policies": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": ["type", "value", "periodSeconds"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["Pods", "Percent"],
+                            "description": "Type of scaling policy: Pods (fixed number) or Percent (percentage of current replicas)"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The value to scale by (number of pods or percentage)"
+                          },
+                          "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Time in seconds over which the policy is evaluated"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "description": "List of scaling policies for scale-up"
+                    },
+                    "selectPolicy": {
+                      "type": "string",
+                      "enum": ["Max", "Min", "Disabled"],
+                      "description": "Policy to select among multiple policies: Max (default), Min, or Disabled"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "scaleDown": {
+                  "type": "object",
+                  "properties": {
+                    "stabilizationWindowSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Time in seconds to wait before scaling down again (default: 300)"
+                    },
+                    "policies": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": ["type", "value", "periodSeconds"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["Pods", "Percent"],
+                            "description": "Type of scaling policy: Pods (fixed number) or Percent (percentage of current replicas)"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "The value to scale by (number of pods or percentage)"
+                          },
+                          "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Time in seconds over which the policy is evaluated"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "description": "List of scaling policies for scale-down"
+                    },
+                    "selectPolicy": {
+                      "type": "string",
+                      "enum": ["Max", "Min", "Disabled"],
+                      "description": "Policy to select among multiple policies: Max (default), Min, or Disabled"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["enabled", "minReplicas", "maxReplicas", "metrics", "behavior"],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "description": "PodDisruptionBudget configuration for the worker node",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Whether to enable the PodDisruptionBudget for the worker node",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "minAvailable": {
+              "default": 1,
+              "description": "Minimum number of available replicas for the worker node",
+              "required": [],
+              "title": "minAvailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxUnavailable": {
+              "default": null,
+              "description": "Maximum number of unavailable replicas for the worker node",
+              "required": [],
+              "title": "maxUnavailable",
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]+%$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["enabled"],
+          "title": "pdb",
+          "type": "object",
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": ["enabled"]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "minAvailable": { "type": "null" },
+                "maxUnavailable": { "type": "null" }
+              },
+              "required": ["minAvailable", "maxUnavailable"]
+            }
+          }
+        },
+        "waitMainNodeReady": {
+          "additionalProperties": true,
+          "description": "This is to setup the wait for the main node to be ready.",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether to enable the wait for the main node to be ready.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "overwriteSchema": {
+              "default": "",
+              "description": "The schema to use for request to the main node. On default, it will use identify the schema from the main N8N_PROTOCOL environment variable or use http.",
+              "required": [],
+              "title": "overwriteSchema",
+              "type": "string"
+            },
+            "overwriteUrl": {
+              "default": "",
+              "description": "The URL to use for request to the main node. On default, it will use service name and port.",
+              "required": [],
+              "title": "overwriteUrl",
+              "type": "string"
+            },
+            "healthCheckPath": {
+              "default": "/healthz",
+              "description": "The health check path to use for request to the main node.",
+              "required": [],
+              "title": "healthCheckPath",
+              "type": "string"
+            },
+            "additionalParameters": {
+              "default": [],
+              "description": "The additional parameters to use part of wget command. e.g. --no-check-certificate",
+              "required": [],
+              "title": "additionalParameters",
+              "type": "array"
+            }
+          },
+          "required": ["enabled", "overwriteSchema", "overwriteUrl", "healthCheckPath", "additionalParameters"],
+          "title": "waitMainNodeReady",
+          "type": "object"
+        },
+        "resources": {
+          "additionalProperties": true,
+          "description": "This block is for setting up the resource management for the pod more information can be found here: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "properties": {
+            "limits": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "2000m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "2Gi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "additionalProperties": true,
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "required": [],
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "startupProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the startup probe for the worker pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "exec": {
+              "additionalProperties": true,
+              "properties": {
+                "command": {
+                  "default": ["/bin/sh", "-c", "ps aux | grep '[n]8n'"],
+                  "required": [],
+                  "title": "command",
+                  "type": "array"
+                }
+              },
+              "required": ["command"],
+              "title": "exec",
+              "type": "object"
+            },
+            "initialDelaySeconds": {
+              "default": 10,
+              "required": [],
+              "title": "initialDelaySeconds",
+              "type": "integer"
+            },
+            "periodSeconds": {
+              "default": 5,
+              "required": [],
+              "title": "periodSeconds",
+              "type": "integer"
+            },
+            "failureThreshold": {
+              "default": 30,
+              "required": [],
+              "title": "failureThreshold",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "title": "startupProbe",
+          "type": "object"
+        },
+        "livenessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the liveness probe for the worker pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "livenessProbe",
+          "type": "object"
+        },
+        "readinessProbe": {
+          "additionalProperties": true,
+          "description": "This is to setup the readiness probe for the worker pod more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "httpGet": {
+              "additionalProperties": true,
+              "properties": {
+                "path": {
+                  "default": "/healthz/readiness",
+                  "required": [],
+                  "title": "path",
+                  "type": "string"
+                },
+                "port": {
+                  "default": "http",
+                  "required": [],
+                  "title": "port",
+                  "type": "string"
+                }
+              },
+              "required": ["path", "port"],
+              "title": "httpGet",
+              "type": "object"
+            }
+          },
+          "required": ["httpGet"],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "forceToUseStatefulset": {
+          "default": false,
+          "description": "Force to use statefulset for the worker pod. If true, the worker pod will be created as a statefulset.",
+          "required": [],
+          "title": "forceToUseStatefulset",
+          "type": "boolean"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "description": "Persistence configuration for the worker pod",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Whether to enable persistence",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "volumeName": {
+              "default": "",
+              "description": "Name of the volume to use for persistence",
+              "required": [],
+              "title": "volumeName",
+              "type": "string"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Existing claim to use for persistence",
+              "required": [],
+              "title": "existingClaim",
+              "type": "string"
+            },
+            "mountPath": {
+              "default": "",
+              "description": "Mount path for persistence",
+              "required": [],
+              "title": "mountPath",
+              "type": "string"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Sub path for persistence",
+              "required": [],
+              "title": "subPath",
+              "type": "string"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistence",
+              "required": [],
+              "title": "storageClass",
+              "type": "string"
+            },
+            "accessMode": {
+              "description": "Access mode for persistence",
+              "enum": ["ReadWriteOnce", "ReadWriteMany"],
+              "required": [],
+              "title": "accessMode",
+              "type": "string"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size for persistence",
+              "required": [],
+              "title": "size",
+              "type": "string"
+            },
+            "annotations": {
+              "additionalProperties": true,
+              "description": "Annotations for persistence",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "labels": {
+              "additionalProperties": true,
+              "description": "Labels for persistence",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            }
+          },
+          "required": ["enabled", "volumeName", "existingClaim", "mountPath", "subPath", "storageClass", "accessMode", "size", "annotations", "labels"],
+          "title": "persistence",
+          "type": "object"
+        },
+        "extraEnvVars": {
+          "additionalProperties": true,
+          "description": "Extra environment variables",
+          "required": [],
+          "title": "extraEnvVars",
+          "type": "object"
+        },
+        "extraSecretNamesForEnvFrom": {
+          "description": "Extra secrets for environment variables",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraSecretNamesForEnvFrom",
+          "type": "array"
+        },
+        "volumes": {
+          "description": "Additional volumes on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes",
+          "type": "array"
+        },
+        "volumeMounts": {
+          "description": "Additional volumeMounts on the output Deployment definition.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts",
+          "type": "array"
+        },
+        "initContainers": {
+          "description": "Additional init containers for the worker pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "initContainers",
+          "type": "array"
+        },
+        "extraContainers": {
+          "description": "Additional containers for the worker pod",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraContainers",
+          "type": "array"
+        },
+        "affinity": {
+          "additionalProperties": true,
+          "description": "For more information checkout: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "hostAliases": {
+          "description": "Host aliases for the worker pod. For more information checkout: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/#adding-additional-entries-with-hostaliases",
+          "items": {
+            "type": "object",
+            "required": ["ip", "hostnames"],
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "IP address for the host alias"
+              },
+              "hostnames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of hostnames to associate with the IP address"
+              }
+            },
+            "additionalProperties": false
+          },
+          "required": [],
+          "title": "hostAliases",
+          "type": "array"
+        },
+        "runtimeClassName": {
+          "description": "Runtime class name for the worker pod. For more information checkout: https://kubernetes.io/docs/concepts/containers/runtime-class/",
+          "required": [],
+          "title": "runtimeClassName",
+          "type": "string"
+        }
+      },
+      "required": ["mode", "count", "concurrency", "allNodes", "autoscaling", "resources", "startupProbe", "livenessProbe", "readinessProbe", "forceToUseStatefulset", "persistence", "extraEnvVars", "extraSecretNamesForEnvFrom", "volumes", "volumeMounts", "pdb", "waitMainNodeReady", "initContainers", "extraContainers", "affinity", "hostAliases", "runtimeClassName"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "allNodes": { "const": true },
+              "autoscaling": {
+                "properties": { "enabled": { "const": true } }
+              }
+            }
+          },
+          "then": {
+            "not": { "type": "object" },
+            "description": "allNodes and autoscaling.enabled cannot both be true"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "autoscaling": {
+                "properties": { "enabled": { "const": true } }
+              },
+              "forceToUseStatefulset": { "const": true }
+            }
+          },
+          "then": {
+            "not": { "type": "object" },
+            "description": "worker.autoscaling.enabled and worker.forceToUseStatefulset cannot both be true"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "autoscaling": {
+                "properties": { "enabled": { "const": true } }
+              },
+              "persistence": {
+                "properties": {
+                  "enabled": { "const": true },
+                  "accessMode": { "const": "ReadWriteOnce" }
+                },
+                "required": ["enabled", "accessMode"]
+              }
+            }
+          },
+          "then": {
+            "not": { "type": "object" },
+            "description": "worker.autoscaling.enabled cannot be true when worker.persistence.enabled=true and worker.persistence.accessMode=ReadWriteOnce"
+          }
+        }
+      ],
+      "title": "worker",
+      "type": "object"
+    },
+    "taskRunners": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "internal",
+          "description": "Use `internal` to use internal task runner, or use `external` to have external sidecar task runner",
+          "required": [],
+          "title": "mode",
+          "type": "string",
+          "enum": ["internal", "external"]
+        },
+        "taskTimeout": {
+          "default": 60,
+          "description": "The timeout for the task in seconds",
+          "required": [],
+          "title": "taskTimeout",
+          "type": "integer"
+        },
+        "taskHeartbeatInterval": {
+          "default": 30,
+          "description": "The heartbeat interval for the task in seconds",
+          "required": [],
+          "title": "taskHeartbeatInterval",
+          "type": "integer"
+        },
+        "maxConcurrency": {
+          "default": 5,
+          "description": "The maximum concurrency for the task",
+          "required": [],
+          "title": "maxConcurrency",
+          "type": "integer"
+        },
+        "broker": {
+          "additionalProperties": false,
+          "properties": {
+            "address": {
+              "default": "127.0.0.1",
+              "description": "This sets the address for the broker of the external task runner",
+              "required": [],
+              "title": "address",
+              "type": "string"
+            },
+            "port": {
+              "default": 5679,
+              "description": "This sets the port for the broker of the external task runner",
+              "required": [],
+              "title": "port",
+              "type": "integer"
+            }
+          },
+          "required": ["address", "port"],
+          "title": "broker",
+          "type": "object"
+        },
+        "external": {
+          "additionalProperties": false,
+          "properties": {
+            "mainNodeAuthToken": {
+              "default": "",
+              "description": "This sets the auth token for the n8n main node of the external task runner",
+              "required": [],
+              "title": "mainNodeAuthToken",
+              "type": "string"
+            },
+            "workerNodeAuthToken": {
+              "default": "",
+              "description": "This sets the auth token for the n8n worker node of the external task runner",
+              "required": [],
+              "title": "workerNodeAuthToken",
+              "type": "string"
+            },
+            "autoShutdownTimeout": {
+              "default": 15,
+              "description": "This sets the auto shutdown timeout for the external task runner in seconds",
+              "required": [],
+              "title": "autoShutdownTimeout",
+              "type": "integer"
+            },
+            "port": {
+              "default": 5680,
+              "description": "This sets the ports for the external task runner more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports",
+              "required": [],
+              "title": "port",
+              "type": "integer"
+            },
+            "nodeOptions": {
+              "default": [],
+              "description": "This sets the node options for the external task runner",
+              "required": [],
+              "title": "nodeOptions",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "resources": {
+              "additionalProperties": false,
+              "properties": {
+                "requests": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["cpu", "memory"],
+                  "title": "requests",
+                  "type": "object"
+                },
+                "limits": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["cpu", "memory"],
+                  "title": "limits",
+                  "type": "object"
+                }
+              },
+              "required": ["requests", "limits"],
+              "title": "resources",
+              "type": "object"
+            }
+          },
+          "required": ["autoShutdownTimeout", "port", "nodeOptions", "resources"],
+          "title": "external",
+          "type": "object"
+        }
+      },
+      "required": ["mode", "taskTimeout", "taskHeartbeatInterval", "maxConcurrency", "broker"],
+      "if": {
+        "properties": {
+          "mode": { "const": "external" }
+        }
+      },
+      "then": {
+        "required": ["external"]
+      },
+      "else": {
+        "properties": {
+          "external": { "type": "object" }
+        }
+      },
+      "title": "taskRunners",
+      "type": "object"
+    },
+    "workflowHistory": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Whether to save workflow history versions",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "pruneTime": {
+          "default": 336,
+          "description": "Time (in hours) to keep workflow history versions for. To disable it, use -1 as a value",
+          "required": [],
+          "title": "pruneTime",
+          "type": "integer",
+          "minimum": -1
+        }
+      },
+      "required": ["enabled", "pruneTime"],
+      "title": "workflowHistory",
+      "type": "object"
+    },
+    "serviceMonitor": {
+      "additionalProperties": false,
+      "description": "The ServiceMonitor configuration for the n8n deployment. Please refer to the following link for more information: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Whether to enable the ServiceMonitor for the n8n deployment",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "namespace": {
+          "default": "",
+          "description": "The namespace for the ServiceMonitor. If empty, the ServiceMonitor will be deployed in the same namespace as the n8n chart.",
+          "title": "namespace",
+          "type": "string"
+        },
+        "interval": {
+          "default": "30s",
+          "description": "The interval for the ServiceMonitor (e.g., 30s, 1m, 1h)",
+          "title": "interval",
+          "type": "string",
+          "pattern": "^\\d+(ms|s|m|h|d|w|y)$"
+        },
+        "labels": {
+          "default": {
+            "release": "prometheus"
+          },
+          "description": "The labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator",
+          "title": "labels",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "timeout": {
+          "default": "10s",
+          "description": "The timeout for the ServiceMonitor (e.g., 10s, 1m)",
+          "title": "timeout",
+          "type": "string",
+          "pattern": "^\\d+(ms|s|m|h|d|w|y)$"
+        },
+        "targetLabels": {
+          "default": [],
+          "description": "Set of labels to transfer from the Kubernetes Service onto the target",
+          "title": "targetLabels",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metricRelabelings": {
+          "default": [],
+          "description": "The metric relabelings for the ServiceMonitor, following Prometheus relabel_config structure",
+          "title": "metricRelabelings",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceLabels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The source labels to relabel from"
+              },
+              "regex": {
+                "type": "string",
+                "description": "The regular expression to match against source labels"
+              },
+              "targetLabel": {
+                "type": "string",
+                "description": "The label to write the result to"
+              },
+              "action": {
+                "type": "string",
+                "enum": ["replace", "keep", "drop", "labeldrop", "labelkeep", "hashmod"],
+                "description": "The relabeling action to perform"
+              },
+              "separator": {
+                "type": "string",
+                "default": ";",
+                "description": "Separator used when concatenating source labels"
+              },
+              "modulus": {
+                "type": "integer",
+                "description": "Modulus to use with hashmod action"
+              },
+              "replacement": {
+                "type": "string",
+                "default": "$1",
+                "description": "Replacement value for the 'replace' action"
+              }
+            },
+            "required": ["action"],
+            "additionalProperties": true
+          }
+        },
+        "metricsPrefix": {
+          "default": "n8n_",
+          "description": "The metrics prefix for the ServiceMonitor",
+          "title": "metricsPrefix",
+          "type": "string"
+        },
+        "include": {
+          "default": {
+            "defaultMetrics": true,
+            "cacheMetrics": false,
+            "messageEventBusMetrics": false,
+            "workflowIdLabel": false,
+            "nodeTypeLabel": false,
+            "credentialTypeLabel": false,
+            "apiEndpoints": false,
+            "apiPathLabel": false,
+            "apiMethodLabel": false,
+            "apiStatusCodeLabel": false,
+            "queueMetrics": false
+          },
+          "description": "Metrics and labels to include in the ServiceMonitor",
+          "title": "include",
+          "type": "object",
+          "properties": {
+            "defaultMetrics": {
+              "default": true,
+              "description": "Whether to include default metrics",
+              "title": "defaultMetrics",
+              "type": "boolean"
+            },
+            "cacheMetrics": {
+              "default": false,
+              "description": "Whether to include cache metrics",
+              "title": "cacheMetrics",
+              "type": "boolean"
+            },
+            "messageEventBusMetrics": {
+              "default": false,
+              "description": "Whether to include message event bus metrics",
+              "title": "messageEventBusMetrics",
+              "type": "boolean"
+            },
+            "workflowIdLabel": {
+              "default": false,
+              "description": "Whether to include workflow id label",
+              "title": "workflowIdLabel",
+              "type": "boolean"
+            },
+            "nodeTypeLabel": {
+              "default": false,
+              "description": "Whether to include node type label",
+              "title": "nodeTypeLabel",
+              "type": "boolean"
+            },
+            "credentialTypeLabel": {
+              "default": false,
+              "description": "Whether to include credential type label",
+              "title": "credentialTypeLabel",
+              "type": "boolean"
+            },
+            "apiEndpoints": {
+              "default": false,
+              "description": "Whether to include api endpoints",
+              "title": "apiEndpoints",
+              "type": "boolean"
+            },
+            "apiPathLabel": {
+              "default": false,
+              "description": "Whether to include api path label",
+              "title": "apiPathLabel",
+              "type": "boolean"
+            },
+            "apiMethodLabel": {
+              "default": false,
+              "description": "Whether to include api method label",
+              "title": "apiMethodLabel",
+              "type": "boolean"
+            },
+            "apiStatusCodeLabel": {
+              "default": false,
+              "description": "Whether to include api status code label",
+              "title": "apiStatusCodeLabel",
+              "type": "boolean"
+            },
+            "queueMetrics": {
+              "default": false,
+              "description": "Whether to include queue metrics",
+              "title": "queueMetrics",
+              "type": "boolean"
+            }
+          },
+          "required": ["defaultMetrics", "cacheMetrics", "messageEventBusMetrics", "workflowIdLabel", "nodeTypeLabel", "credentialTypeLabel", "apiEndpoints", "apiPathLabel", "apiMethodLabel", "apiStatusCodeLabel", "queueMetrics"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["enabled", "namespace", "interval", "labels", "timeout", "targetLabels", "metricRelabelings", "metricsPrefix", "include"],
+      "title": "serviceMonitor",
+      "type": "object"
+    },
+    "minio": {
+      "additionalProperties": true,
+      "description": "Minio configuration",
+      "properties": {
+        "buckets": {
+          "description": "Minio buckets",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "n8n-bucket",
+                "description": "This is for setting up the bucket name.",
+                "required": [],
+                "title": "name", 
+                "type": "string"
+              },
+              "policy": {
+                "default": "none",
+                "enum": ["none", "download", "upload", "public"],
+                "description": "This is for setting up the bucket policy.",
+                "required": [],
+                "title": "policy",
+                "type": "string"
+              },
+              "purge": {
+                "default": false,
+                "description": "This is for setting up the purge.",
+                "required": [],
+                "title": "purge",
+                "type": "boolean"
+              },
+              "versioning": {
+                "default": false,
+                "description": "This is for setting up the versioning.",
+                "required": [],
+                "title": "versioning",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "policy",
+              "purge",
+              "versioning"
+            ],
+            "type": "object"
+          },
+          "required": [],
+          "title": "buckets",
+          "type": "array"
+        },
+        "consoleIngress": {
+          "additionalProperties": true,
+          "description": "Minio console ingress",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable ingress",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "hosts": {
+              "description": "Ingress hosts",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "required": [],
+              "title": "hosts",
+              "type": "array"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "hosts",
+            "path"
+          ],
+          "title": "consoleIngress",
+          "type": "object"
+        },
+        "deploymentUpdate": {
+          "additionalProperties": true,
+          "description": "Minio deployment update strategy",
+          "properties": {
+            "type": {
+              "default": "Recreate",
+              "required": [],
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "title": "deploymentUpdate",
+          "type": "object"
+        },
+        "drivesPerNode": {
+          "default": 1,
+          "description": "Number of drives attached to a node",
+          "required": [],
+          "title": "drivesPerNode",
+          "type": "integer"
+        },
+        "enabled": {
+          "default": false,
+          "description": "Enable minio",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "ingress": {
+          "additionalProperties": true,
+          "description": "Minio ingress. n8n will use this ingress to access Minio. It's required when fileStorage.mode is s3.",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable ingress",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "hosts": {
+              "description": "Ingress hosts",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "required": [],
+              "title": "hosts",
+              "type": "array"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "hosts",
+            "path"
+          ],
+          "title": "ingress",
+          "type": "object"
+        },
+        "mode": {
+          "default": "standalone",
+          "description": "Minio mode",
+          "required": [],
+          "title": "mode",
+          "type": "string"
+        },
+        "persistence": {
+          "additionalProperties": true,
+          "description": "Minio persistence",
+          "properties": {
+            "accessMode": {
+              "default": "ReadWriteOnce",
+              "description": "Minio persistence access mode",
+              "required": [],
+              "title": "accessMode",
+              "type": "string"
+            },
+            "annotations": {
+              "additionalProperties": true,
+              "default": {},
+              "description": "Minio persistence annotations",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable persistence",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Minio persistence existing claim",
+              "required": [],
+              "title": "existingClaim",
+              "type": "string"
+            },
+            "size": {
+              "default": "40Gi",
+              "pattern": "^[0-9]+(Gi|Mi|Ki|G|M|K)$",
+              "description": "Minio persistence size",
+              "required": [],
+              "title": "size",
+              "type": "string"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Minio persistence storage class",
+              "required": [],
+              "title": "storageClass",
+              "type": "string"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Minio persistence sub path",
+              "required": [],
+              "title": "subPath",
+              "type": "string"
+            },
+            "volumeName": {
+              "default": "",
+              "description": "Minio persistence volume name",
+              "required": [],
+              "title": "volumeName",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "annotations",
+            "existingClaim",
+            "storageClass",
+            "volumeName",
+            "accessMode",
+            "size",
+            "subPath"
+          ],
+          "title": "persistence",
+          "type": "object"
+        },
+        "policies": {
+          "description": "Minio policies",
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "default": "n8n-policy",
+                "description": "This is for setting up the policy name.",
+                "required": [],
+                "title": "name",
+                "type": "string"
+              },
+              "statements": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "actions": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1,
+                      "required": [],
+                      "title": "actions", 
+                      "type": "array"
+                    },
+                    "resources": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1,
+                      "required": [],
+                      "title": "resources",
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "actions",
+                    "resources"
+                  ],
+                  "type": "object"
+                },
+                "required": [],
+                "title": "statements",
+                "type": "array"
+              }
+            },
+            "required": [
+              "name",
+              "statements"
+            ],
+            "type": "object"
+          },
+          "required": [],
+          "title": "policies",
+          "type": "array"
+        },
+        "pools": {
+          "default": 1,
+          "minimum": 1,
+          "description": "Number of expanded MinIO clusters",
+          "required": [],
+          "title": "pools",
+          "type": "integer"
+        },
+        "replicas": {
+          "default": 1,
+          "minimum": 1,
+          "description": "Number of MinIO containers running",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": true,
+          "description": "Minio resources",
+          "properties": {
+            "requests": {
+              "additionalProperties": true,
+              "description": "Minio requests",
+              "properties": {
+                "memory": {
+                  "default": "1Gi",
+                  "pattern": "^[0-9]+(Gi|Mi|Ki|G|M|K)$",
+                  "description": "Minio requests memory",
+                  "required": [],
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "rootPassword": {
+          "default": "",
+          "description": "Minio root password. Length should be at least 8 characters.",
+          "required": [],
+          "title": "rootPassword",
+          "type": "string"
+        },
+        "rootUser": {
+          "default": "",
+          "description": "Minio root user. Length should be at least 3 characters.",
+          "required": [],
+          "title": "rootUser",
+          "type": "string"
+        },
+        "statefulSetUpdate": {
+          "additionalProperties": true,
+          "description": "Minio statefulset update strategy",
+          "properties": {
+            "updateStrategy": {
+              "default": "Recreate",
+              "required": [],
+              "title": "updateStrategy",
+              "type": "string"
+            }
+          },
+          "required": [
+            "updateStrategy"
+          ],
+          "title": "statefulSetUpdate",
+          "type": "object"
+        },
+        "users": {
+          "description": "Minio users",
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "accessKey": {
+                "default": "n8n-user",
+                "required": [],
+                "title": "accessKey", 
+                "type": "string"
+              },
+              "policy": {
+                "default": "n8n-policy",
+                "description": "n8n user policy",
+                "required": [],
+                "title": "policy",
+                "type": "string"
+              },
+              "secretKey": {
+                "default": "Change_Me",
+                "description": "n8n user secret key",
+                "required": [],
+                "title": "secretKey",
+                "type": "string"
+              }
+            },
+            "required": [
+              "accessKey",
+              "secretKey", 
+              "policy"
+            ],
+            "type": "object"
+          },
+          "required": [],
+          "title": "users",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enabled",
+        "mode",
+        "deploymentUpdate",
+        "statefulSetUpdate",
+        "drivesPerNode",
+        "replicas",
+        "pools",
+        "rootUser",
+        "rootPassword",
+        "resources",
+        "persistence",
+        "ingress",
+        "consoleIngress",
+        "policies",
+        "users",
+        "buckets"
+      ],
+      "title": "minio",
+      "type": "object"
+    },
+    "sharedStorage": {
+      "additionalProperties": false,
+      "description": "n8n shared storage configuration",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "size": {
+          "default": "8Gi",
+          "pattern": "^[0-9]+(Gi|Mi|Ki|G|M|K)$",
+          "required": [],
+          "title": "size",
+          "type": "string"
+        },
+        "storageClass": {
+          "default": "",
+          "required": [],
+          "title": "storageClass",
+          "type": "string"
+        },
+        "accessMode": {
+          "default": "ReadWriteMany",
+          "enum": ["ReadWriteOnce", "ReadWriteMany"],
+          "required": [],
+          "title": "accessMode",
+          "type": "string"
+        }
+      },
+      "required": ["enabled", "name", "size", "storageClass", "accessMode"],
+      "title": "sharedStorage",
+      "type": "object"
+    },
+    "dnsPolicy": {
+      "default": "",
+      "description": "For more information checkout: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy",
+      "required": [],
+      "enum": ["", "ClusterFirst", "ClusterFirstWithHostNet", "Default", "None"],
+      "title": "dnsPolicy",
+      "type": "string"
+    },
+    "dnsConfig": {
+      "type": "object",
+      "description": "For more information checkout: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config",
+      "properties": {
+        "nameservers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:(?:[0-9]{1,3}\\.){3}[0-9]{1,3}|(?:[0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4})$",
+            "description": "A list of IPv4 or IPv6 addresses to use as DNS nameservers."
+          },
+          "minItems": 0,
+          "description": "List of DNS nameserver IP addresses (IPv4 or IPv6)."
+        },
+        "searches": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*$",
+            "description": "A DNS search domain suffix."
+          },
+          "minItems": 0,
+          "description": "List of DNS search domains for hostname lookup."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the DNS option."
+              },
+              "value": {
+                "type": ["string", "null"],
+                "description": "Value of the DNS option (optional)."
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false,
+            "description": "A DNS option object."
+          },
+          "minItems": 0,
+          "description": "List of DNS resolver options."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "image",
+    "imagePullSecrets",
+    "nameOverride",
+    "fullnameOverride",
+    "strategy",
+    "serviceAccount",
+    "podAnnotations",
+    "podLabels",
+    "podSecurityContext",
+    "securityContext",
+    "service",
+    "log",
+    "nodes",
+    "npmRegistry",
+    "binaryData",
+    "db",
+    "sentry",
+    "diagnostics",
+    "versionNotifications",
+    "api",
+    "worker",
+    "webhook",
+    "taskRunners",
+    "workflowHistory",
+    "encryptionKey",
+    "existingEncryptionKeySecret",
+    "timezone",
+    "defaultLocale",
+    "gracefulShutdownTimeout",
+    "ingress",
+    "license",
+    "main",
+    "nodeSelector",
+    "tolerations",
+    "affinity",
+    "dnsPolicy",
+    "dnsConfig",
+    "redis",
+    "externalRedis",
+    "postgresql",
+    "externalPostgresql",
+    "serviceMonitor",
+    "sharedStorage",
+    "minio"
+  ],
+  "type": "object"
+}

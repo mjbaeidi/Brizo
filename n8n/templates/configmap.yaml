@@ -1,0 +1,309 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-database-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{- if .Values.db.tablePrefix }}
+  DB_TABLE_PREFIX: {{ .Values.db.tablePrefix | quote }}
+{{- end }}
+{{- if eq .Values.db.type "postgresdb" }}
+  DB_TYPE: {{ .Values.db.type | quote }}
+  {{- if .Values.postgresql.enabled }}
+  DB_POSTGRESDB_HOST: {{ template "n8n.fullname" . }}-postgresql
+  DB_POSTGRESDB_PORT: {{ .Values.postgresql.primary.service.ports.postgresql | quote }}
+  DB_POSTGRESDB_DATABASE: {{ .Values.postgresql.auth.database | quote }}
+  {{- else }}
+  DB_POSTGRESDB_HOST: {{ .Values.externalPostgresql.host | quote }}
+  DB_POSTGRESDB_PORT: {{ .Values.externalPostgresql.port | quote }}
+  DB_POSTGRESDB_DATABASE: {{ .Values.externalPostgresql.database | quote }}
+  {{- end }}
+  DB_POSTGRESDB_POOL_SIZE: {{ .Values.db.postgresdb.poolSize | quote }}
+  DB_POSTGRESDB_CONNECTION_TIMEOUT: {{ .Values.db.postgresdb.connectionTimeout | quote }}
+  DB_POSTGRESDB_IDLE_CONNECTION_TIMEOUT: {{ .Values.db.postgresdb.idleConnectionTimeout | quote }}
+  DB_POSTGRESDB_SCHEMA: {{ .Values.db.postgresdb.schema | quote }}
+  {{- if .Values.db.postgresdb.ssl.enabled }}
+  DB_POSTGRESDB_SSL_ENABLED: {{ .Values.db.postgresdb.ssl.enabled | quote }}
+  {{- if eq (include "n8n.postgres.ssl.hasCA" .) "true" }}
+  DB_POSTGRESDB_SSL_CA: "/home/node/certs/ca/ca.crt"
+  {{- end }}
+  {{- if eq (include "n8n.postgres.ssl.hasCert" .) "true" }}
+  DB_POSTGRESDB_SSL_CERT: "/home/node/certs/cert/cert.crt"
+  {{- end }}
+  {{- if eq (include "n8n.postgres.ssl.hasKey" .) "true" }}
+  DB_POSTGRESDB_SSL_KEY: "/home/node/certs/key/cert.key"
+  {{- end }}
+  {{- end }}
+{{- else }}
+  DB_TYPE: {{ .Values.db.type | default "sqlite" }}
+  DB_SQLITE_VACUUM_ON_STARTUP: {{ .Values.db.sqlite.vacuum | quote }}
+{{- end }}
+{{- if .Values.db.logging.enabled }}
+  DB_LOGGING_ENABLED: "true"
+  DB_LOGGING_OPTIONS: {{ .Values.db.logging.options | quote }}
+  DB_LOGGING_MAX_EXECUTION_TIME: {{ .Values.db.logging.maxQueryExecutionTime | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-logging-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_LOG_LEVEL: {{ .Values.log.level | quote }}
+  N8N_LOG_OUTPUT: {{ join "," .Values.log.output | quote }}
+{{- if has "file" .Values.log.output }}
+  N8N_LOG_FILE_COUNT_MAX: {{ .Values.log.file.maxcount | quote }}
+  N8N_LOG_FILE_SIZE_MAX: {{ .Values.log.file.maxsize | quote }}
+  N8N_LOG_FILE_LOCATION: {{ .Values.log.file.location | quote }}
+{{- end }}
+{{- if gt (len .Values.log.scopes) 0 }}
+  N8N_LOG_SCOPES: {{ join "," .Values.log.scopes | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-diagnostics-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_DIAGNOSTICS_ENABLED: {{ .Values.diagnostics.enabled | quote }}
+{{- if .Values.diagnostics.enabled }}
+  N8N_DIAGNOSTICS_CONFIG_FRONTEND: {{ .Values.diagnostics.frontendConfig | quote }}
+  N8N_DIAGNOSTICS_CONFIG_BACKEND: {{ .Values.diagnostics.backendConfig | quote }}
+  N8N_DIAGNOSTICS_POSTHOG_API_KEY: {{ .Values.diagnostics.postHog.apiKey | quote }}
+  N8N_DIAGNOSTICS_POSTHOG_API_HOST: {{ .Values.diagnostics.postHog.apiHost | quote }}
+{{- else }}
+  N8N_DIAGNOSTICS_CONFIG_FRONTEND: ""
+  N8N_DIAGNOSTICS_CONFIG_BACKEND: ""
+  N8N_DIAGNOSTICS_POSTHOG_API_KEY: ""
+  N8N_DIAGNOSTICS_POSTHOG_API_HOST: ""
+{{- end }}
+{{- if .Values.sentry.enabled }}
+  N8N_SENTRY_DSN: {{ .Values.sentry.backendDsn | quote }}
+  N8N_FRONTEND_SENTRY_DSN: {{ .Values.sentry.frontendDsn | quote }}
+  N8N_VERSION: {{ default .Chart.AppVersion .Values.image.tag | quote }}
+  ENVIRONMENT: "production"
+  DEPLOYMENT_NAME: {{ .Release.Name | quote }}
+{{- else }}
+  N8N_SENTRY_DSN: ""
+  N8N_FRONTEND_SENTRY_DSN: ""
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-version-notifications-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_VERSION_NOTIFICATIONS_ENABLED: {{ .Values.versionNotifications.enabled | quote }}
+{{- if .Values.versionNotifications.enabled }}
+  N8N_VERSION_NOTIFICATIONS_ENDPOINT: {{ .Values.versionNotifications.endpoint | quote }}
+  N8N_VERSION_NOTIFICATIONS_INFO_URL: {{ .Values.versionNotifications.infoUrl | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-public-api-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_PUBLIC_API_DISABLED: {{ not .Values.api.enabled | quote }}
+  N8N_PUBLIC_API_ENDPOINT: {{ .Values.api.path | quote }}
+  N8N_PUBLIC_API_SWAGGERUI_DISABLED: {{ not .Values.api.swagger.enabled | quote }}
+{{- if and (eq .Values.db.type "postgresdb") (or (eq .Values.worker.mode "queue") (eq .Values.webhook.mode "queue")) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-queue-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  EXECUTIONS_MODE: "queue"
+  QUEUE_BULL_REDIS_DB: {{ .Values.externalRedis.database | quote }}
+  OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: "true"
+  {{- if .Values.redis.enabled }}
+  QUEUE_BULL_REDIS_HOST: {{ template "n8n.fullname" . }}-redis-master
+  QUEUE_BULL_REDIS_PORT: {{ (default 6379 .Values.redis.master.service.ports.redis | int) | quote }}
+  {{- else if and .Values.externalRedis.clusterNodes (gt (len .Values.externalRedis.clusterNodes) 0) }}
+    {{- $nodeList := list }}
+    {{- range .Values.externalRedis.clusterNodes }}
+      {{- $nodeList = append $nodeList (printf "%s:%d" .host (int .port)) }}
+    {{- end }}
+  QUEUE_BULL_REDIS_CLUSTER_NODES: {{ (join "," $nodeList) | quote }}
+  {{- else }}
+  QUEUE_BULL_REDIS_HOST: {{ .Values.externalRedis.host | quote }}
+  QUEUE_BULL_REDIS_PORT: {{ .Values.externalRedis.port | quote }}
+  {{- end }}
+  {{- if eq .Values.webhook.mode "queue" }}
+  N8N_DISABLE_PRODUCTION_MAIN_PROCESS: "true"
+  {{- end }}
+  {{- if .Values.externalRedis.tls.enabled }}
+  QUEUE_BULL_REDIS_TLS: {{ .Values.externalRedis.tls.enabled | quote }}
+  {{- end }}
+  QUEUE_BULL_REDIS_DUALSTACK: {{ .Values.externalRedis.dualStack | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-workflow-history-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_WORKFLOW_HISTORY_ENABLED: {{ .Values.workflowHistory.enabled | quote }}
+  N8N_WORKFLOW_HISTORY_PRUNE_TIME: {{ .Values.workflowHistory.pruneTime | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-task-broker-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_RUNNERS_ENABLED: "true"
+  N8N_RUNNERS_MODE: {{ .Values.taskRunners.mode | quote }}
+  N8N_RUNNERS_TASK_TIMEOUT: {{ .Values.taskRunners.taskTimeout | quote }}
+  N8N_RUNNERS_HEARTBEAT_INTERVAL: {{ .Values.taskRunners.taskHeartbeatInterval | quote }}
+{{- if eq .Values.taskRunners.mode "external" }}
+  N8N_RUNNERS_BROKER_LISTEN_ADDRESS: {{ .Values.taskRunners.broker.address | quote }}
+  N8N_RUNNERS_BROKER_PORT: {{ .Values.taskRunners.broker.port | quote }}
+{{- else }}
+  N8N_RUNNERS_MAX_CONCURRENCY: {{ .Values.taskRunners.maxConcurrency | quote }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-metrics-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_METRICS: {{ .Values.serviceMonitor.enabled | quote }}
+  N8N_METRICS_PREFIX: {{ .Values.serviceMonitor.metricsPrefix | quote }}
+  N8N_METRICS_INCLUDE_DEFAULT_METRICS: {{ .Values.serviceMonitor.include.defaultMetrics | quote }}
+  N8N_METRICS_INCLUDE_CACHE_METRICS: {{ .Values.serviceMonitor.include.cacheMetrics | quote }}
+  N8N_METRICS_INCLUDE_MESSAGE_EVENT_BUS_METRICS: {{ .Values.serviceMonitor.include.messageEventBusMetrics | quote }}
+  N8N_METRICS_INCLUDE_WORKFLOW_ID_LABEL: {{ .Values.serviceMonitor.include.workflowIdLabel | quote }}
+  N8N_METRICS_INCLUDE_NODE_TYPE_LABEL: {{ .Values.serviceMonitor.include.nodeTypeLabel | quote }}
+  N8N_METRICS_INCLUDE_CREDENTIAL_TYPE_LABEL: {{ .Values.serviceMonitor.include.credentialTypeLabel | quote }}
+  N8N_METRICS_INCLUDE_API_ENDPOINTS: {{ .Values.serviceMonitor.include.apiEndpoints | quote }}
+  N8N_METRICS_INCLUDE_API_PATH_LABEL: {{ .Values.serviceMonitor.include.apiPathLabel | quote }}
+  N8N_METRICS_INCLUDE_API_METHOD_LABEL: {{ .Values.serviceMonitor.include.apiMethodLabel | quote }}
+  N8N_METRICS_INCLUDE_API_STATUS_CODE_LABEL: {{ .Values.serviceMonitor.include.apiStatusCodeLabel | quote }}
+  N8N_METRICS_INCLUDE_QUEUE_METRICS: {{ .Values.serviceMonitor.include.queueMetrics | quote }}
+{{- if eq .Values.taskRunners.mode "external" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.taskRunners.fullname" . }}-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_RUNNERS_LAUNCHER_LOG_LEVEL: {{ .Values.log.level | quote }}
+  N8N_RUNNERS_MAX_CONCURRENCY: {{ .Values.taskRunners.maxConcurrency | quote }}
+  N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT: {{ .Values.taskRunners.external.autoShutdownTimeout | quote }}
+  N8N_RUNNERS_TASK_TIMEOUT: {{ .Values.taskRunners.taskTimeout | quote }}
+  N8N_RUNNERS_TASK_BROKER_URI: {{ (printf "http://%s:%d" .Values.taskRunners.broker.address (.Values.taskRunners.broker.port | int)) | quote }}
+  N8N_RUNNERS_LAUNCHER_HEALTH_CHECK_PORT: {{ .Values.taskRunners.external.port | quote }}
+  NODE_OPTIONS: {{ .Values.taskRunners.external.nodeOptions | join " " | quote }}
+  GENERIC_TIMEZONE: {{ .Values.timezone | quote }}
+{{- if .Values.sentry.enabled }}
+  SENTRY_DSN: {{ .Values.sentry.externalTaskRunnersDsn | quote }}
+  N8N_VERSION: {{ default .Chart.AppVersion .Values.image.tag | quote }}
+  ENVIRONMENT: "production"
+  DEPLOYMENT_NAME: {{ .Release.Name | quote }}
+{{- else }}
+  SENTRY_DSN: ""
+{{- end }}
+{{- end }}
+{{- if .Values.license.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-license-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_LICENSE_AUTO_RENEW_ENABLED: {{ .Values.license.autoNenew.enabled | quote }}
+  N8N_LICENSE_AUTO_RENEW_OFFSET: {{ .Values.license.autoNenew.offsetInHours | mul 3600 | quote }}
+  N8N_LICENSE_SERVER_URL: {{ .Values.license.serverUrl | quote }}
+  {{- if ne (int .Values.license.tenantId) 1 }}
+  N8N_LICENSE_TENANT_ID: {{ .Values.license.tenantId | quote }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "n8n.fullname" . }}-binary-data-configmap
+  labels:
+    app: {{ include "n8n.name" . }}
+    chart: {{ include "n8n.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  N8N_DEFAULT_BINARY_DATA_MODE: {{ .Values.binaryData.mode | quote }}
+{{- if gt (len .Values.binaryData.availableModes) 0 }}
+  N8N_AVAILABLE_BINARY_DATA_MODES: {{ join "," .Values.binaryData.availableModes | quote }}
+{{- end }}
+{{- if and (has "filesystem" .Values.binaryData.availableModes) (ne .Values.binaryData.localStoragePath "") }}
+  N8N_BINARY_DATA_STORAGE_PATH: {{ .Values.binaryData.localStoragePath | quote }}
+{{- end }}
+{{- if has "s3" .Values.binaryData.availableModes }}
+  {{- if .Values.minio.enabled }}
+  N8N_EXTERNAL_STORAGE_S3_HOST: {{ template "n8n.fullname" . }}-minio:9000
+    {{- if gt (len .Values.minio.buckets) 0 }}
+      {{- with (first .Values.minio.buckets) }}
+  N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: {{ .name | quote }}
+      {{- end }}
+    {{- else }}
+  N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: {{ .Values.binaryData.s3.bucketName | quote }}
+    {{- end }}
+  {{- else }}
+  N8N_EXTERNAL_STORAGE_S3_HOST: {{ .Values.binaryData.s3.host | quote }}
+  N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME: {{ .Values.binaryData.s3.bucketName | quote }}
+  {{- end }}
+  N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION: {{ .Values.binaryData.s3.bucketRegion | quote }}
+{{- end }}

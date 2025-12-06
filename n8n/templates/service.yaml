@@ -1,0 +1,122 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.fullname" . }}
+  labels:
+    {{- include "n8n.main.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.name }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
+  selector:
+    {{- include "n8n.main.selectorLabels" . | nindent 4 }}
+  {{- if or (.Values.main.forceToUseStatefulset) (and .Values.main.persistence.enabled (gt (int .Values.main.count) 1) (not .Values.main.persistence.existingClaim) (eq .Values.main.persistence.accessMode "ReadWriteOnce")) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.fullname" . }}-headless
+  labels:
+    {{- include "n8n.main.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "n8n.main.selectorLabels" . | nindent 4 }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.name }}
+  {{- end }}
+{{- end }}
+{{- if and .Values.service.enabled (eq .Values.db.type "postgresdb") (eq .Values.webhook.mode "queue") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.webhook.fullname" . }}
+  labels:
+    {{- include "n8n.webhook.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.name }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
+  selector:
+    {{- include "n8n.webhook.selectorLabels" . | nindent 4 }}
+  {{- if or (.Values.worker.forceToUseStatefulset) (and .Values.worker.persistence.enabled (gt (int .Values.worker.count) 1) (not .Values.worker.persistence.existingClaim) (eq .Values.worker.persistence.accessMode "ReadWriteOnce") (not .Values.worker.autoscaling.enabled)) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.worker.fullname" . }}-headless
+  labels:
+    {{- include "n8n.main.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "n8n.worker.selectorLabels" . | nindent 4 }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.name }}
+  {{- end }}
+{{- end }}
+{{- if and .Values.service.enabled .Values.webhook.mcp.enabled (eq .Values.db.type "postgresdb") (eq .Values.webhook.mode "queue") (or (gt (int .Values.webhook.count) 1) (.Values.webhook.autoscaling.enabled) (.Values.webhook.allNodes)) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.mcp-webhook.fullname" . }}
+  labels:
+    {{- include "n8n.mcp-webhook.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.name }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
+  selector:
+    {{- include "n8n.mcp-webhook.selectorLabels" . | nindent 4 }}
+{{- end }}

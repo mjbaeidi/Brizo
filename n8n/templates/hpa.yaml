@@ -1,0 +1,48 @@
+{{- if and .Values.worker.autoscaling.enabled (not .Values.worker.forceToUseStatefulset) (or (not .Values.worker.persistence.enabled) (and .Values.worker.persistence.enabled (eq .Values.worker.persistence.accessMode "ReadWriteMany") )) (eq .Values.db.type "postgresdb") (eq .Values.worker.mode "queue") (not .Values.worker.allNodes) }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "n8n.worker.fullname" . }}
+  labels:
+    {{- include "n8n.worker.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "n8n.worker.fullname" . }}
+  minReplicas: {{ .Values.worker.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.worker.autoscaling.maxReplicas }}
+  {{- with .Values.worker.autoscaling.metrics }}
+  metrics:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if and .Values.worker.autoscaling.behavior (gt (len .Values.worker.autoscaling.behavior) 0) }}
+  behavior:
+    {{- toYaml .Values.worker.autoscaling.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- if and .Values.webhook.autoscaling.enabled (eq .Values.db.type "postgresdb") (eq .Values.webhook.mode "queue") (not .Values.webhook.allNodes) }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "n8n.webhook.fullname" . }}
+  labels:
+    {{- include "n8n.webhook.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "n8n.webhook.fullname" . }}
+  minReplicas: {{ .Values.webhook.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.webhook.autoscaling.maxReplicas }}
+  {{- with .Values.webhook.autoscaling.metrics }}
+  metrics:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if and .Values.webhook.autoscaling.behavior (gt (len .Values.webhook.autoscaling.behavior) 0) }}
+  behavior:
+    {{- toYaml .Values.webhook.autoscaling.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}

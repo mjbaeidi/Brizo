@@ -1,0 +1,87 @@
+should match snapshot of default values:
+  1: |
+    apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    metadata:
+      labels:
+        release: prometheus
+      name: n8n
+      namespace: n8n
+    spec:
+      endpoints:
+        - interval: 30s
+          path: /metrics
+          port: http
+          relabelings:
+            - sourceLabels:
+                - __meta_kubernetes_pod_name
+              targetLabel: pod_name
+            - action: replace
+              replacement: main
+              targetLabel: role
+          scrapeTimeout: 10s
+      namespaceSelector:
+        matchNames:
+          - n8n
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: n8n
+          app.kubernetes.io/name: n8n
+should match snapshot with worker mode queue:
+  1: |
+    apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    metadata:
+      labels:
+        release: prometheus
+      name: n8n
+      namespace: n8n
+    spec:
+      endpoints:
+        - interval: 30s
+          path: /metrics
+          port: http
+          relabelings:
+            - sourceLabels:
+                - __meta_kubernetes_pod_name
+              targetLabel: pod_name
+            - action: replace
+              replacement: main
+              targetLabel: role
+          scrapeTimeout: 10s
+      namespaceSelector:
+        matchNames:
+          - n8n
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: n8n
+          app.kubernetes.io/name: n8n
+  2: |
+    apiVersion: monitoring.coreos.com/v1
+    kind: PodMonitor
+    metadata:
+      labels:
+        release: prometheus
+      name: n8n-worker
+      namespace: n8n
+    spec:
+      namespaceSelector:
+        matchNames:
+          - n8n
+      podMetricsEndpoints:
+        - interval: 30s
+          path: /metrics
+          port: http
+          relabelings:
+            - sourceLabels:
+                - __meta_kubernetes_pod_name
+              targetLabel: pod_name
+            - action: replace
+              replacement: worker
+              targetLabel: role
+          scrapeTimeout: 10s
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: worker
+          app.kubernetes.io/instance: n8n
+          app.kubernetes.io/name: n8n-worker

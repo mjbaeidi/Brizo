@@ -1,0 +1,57 @@
+{{- if and .Values.main.pdb.enabled (or (gt (int .Values.main.count) 1) (not (eq .Values.strategy.type "Recreate"))) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "n8n.fullname" . }}
+  labels:
+    {{- include "n8n.main.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.main.pdb.minAvailable }}
+  minAvailable: {{ .Values.main.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.main.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.main.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.main.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- if and .Values.webhook.pdb.enabled (eq .Values.db.type "postgresdb") (eq .Values.webhook.mode "queue") (not .Values.webhook.allNodes) (or .Values.webhook.autoscaling.enabled (gt (int .Values.webhook.count) 1)) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "n8n.webhook.fullname" . }}
+  labels:
+    {{- include "n8n.webhook.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.webhook.pdb.minAvailable }}
+  minAvailable: {{ .Values.webhook.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.webhook.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.webhook.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.webhook.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- if and .Values.worker.pdb.enabled (eq .Values.db.type "postgresdb") (eq .Values.worker.mode "queue") (not .Values.worker.allNodes) (or .Values.worker.autoscaling.enabled (gt (int .Values.worker.count) 1)) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "n8n.worker.fullname" . }}
+  labels:
+    {{- include "n8n.worker.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.worker.pdb.minAvailable }}
+  minAvailable: {{ .Values.worker.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.worker.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.worker.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.worker.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,1284 @@
+suite: test configmap
+
+templates:
+  - configmap.yaml
+
+release:
+  name: n8n
+  namespace: n8n
+
+chart:
+  version: 1.0.0
+  appVersion: 1.0.0
+
+tests:
+  - it: should set table prefix environment variable when db.tablePrefix is set
+    set:
+      db:
+        tablePrefix: my_prefix
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_TABLE_PREFIX
+          value: my_prefix
+
+  - it: should set db type sqlite on default
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_TYPE
+          value: sqlite
+
+  - it: should set db type postgresdb when db.type is postgresdb
+    set:
+      db:
+        type: postgresdb
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_TYPE
+          value: postgresdb
+
+  - it: should set postgressql host when db type set to postgresdb and postgresql.enabled is true
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_HOST
+          value: n8n-postgresql
+
+  - it: should set postgresql host from external postgresql host when db type set to postgresdb and postgresql.enabled is false
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: false
+      externalPostgresql:
+        host: external-postgresql-hostname
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_HOST
+          value: external-postgresql-hostname
+
+  - it: should set postgresql port when db type set to postgresdb and postgresql.enabled is true
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+        primary:
+          service:
+            ports:
+              postgresql: 9876
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_PORT
+          value: "9876"
+
+  - it: should set postgresql port from external postgresql port when db type set to postgresdb and postgresql.enabled is false
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: false
+      externalPostgresql:
+        port: 9876
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_PORT
+          value: "9876"
+
+  - it: should set postgresql database when db type set to postgresdb and postgresql.enabled is true
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+        auth:
+          database: my_database
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_DATABASE
+          value: my_database
+
+  - it: should set postgresql database from external postgresql database when db type set to postgresdb and postgresql.enabled is false
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: false
+      externalPostgresql:
+        database: external_database
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_DATABASE
+          value: external_database
+
+  - it: should set postgresql connection settings when poolSize, connectionTimeout, idleConnectionTimeout, and schema are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          poolSize: 2
+          connectionTimeout: 20000
+          idleConnectionTimeout: 30000
+          schema: public
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_POOL_SIZE
+          value: "2"
+      - equal:
+          path: data.DB_POSTGRESDB_CONNECTION_TIMEOUT
+          value: "20000"
+      - equal:
+          path: data.DB_POSTGRESDB_IDLE_CONNECTION_TIMEOUT
+          value: "30000"
+      - equal:
+          path: data.DB_POSTGRESDB_SCHEMA
+          value: public
+
+  - it: should set postgresql ssl connection enabled when postgresdb.ssl.enabled is set to true
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_ENABLED
+          value: "true"
+
+  - it: should set postgresql ssl CA certificate when ssl enabled and base64EncodedCertificateAuthorityFile is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedCertificateAuthorityFile: Q0EgZmlsZSBjb250ZW50
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_CA
+          value: /home/node/certs/ca/ca.crt
+
+  - it: should set postgresql ssl CA certificate when ssl enabled and existingCertificateAuthorityFileSecret.name is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingCertificateAuthorityFileSecret:
+              name: ca-cert-secret
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_CA
+          value: /home/node/certs/ca/ca.crt
+
+  - it: should set postgresql ssl certificate when ssl enabled and base64EncodedCertFile is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedCertFile: Y2VydGlmaWNhdGUgZmlsZSBjb250ZW50
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_CERT
+          value: /home/node/certs/cert/cert.crt
+
+  - it: should set postgresql ssl certificate when ssl enabled and existingCertFileSecret.name is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingCertFileSecret:
+              name: cert-secret
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_CERT
+          value: /home/node/certs/cert/cert.crt
+
+  - it: should set postgresql ssl certificate private key when ssl enabled and base64EncodedPrivateKeyFile is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedPrivateKeyFile: Y2VydGlmaWNhdGUgcHJpdmF0ZSBrZXkgZmlsZSBjb250ZW50
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_KEY
+          value: /home/node/certs/key/cert.key
+
+  - it: should set postgresql ssl certificate private key when ssl enabled and existingPrivateKeyFileSecret.name is set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingPrivateKeyFileSecret:
+              name: cert-private-key-secret
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_POSTGRESDB_SSL_KEY
+          value: /home/node/certs/key/cert.key
+
+  - it: should set vacum on startup when db type set to sqlite
+    set:
+      db:
+        type: sqlite
+        sqlite:
+          vacuum: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_SQLITE_VACUUM_ON_STARTUP
+          value: "true"
+
+  - it: should enable database logging when db.logging.enabled is true
+    set:
+      db:
+        logging:
+          enabled: true
+          options: error
+          maxQueryExecutionTime: 1000
+    documentSelector:
+      path: metadata.name
+      value: n8n-database-configmap
+    asserts:
+      - equal:
+          path: data.DB_LOGGING_ENABLED
+          value: "true"
+      - equal:
+          path: data.DB_LOGGING_OPTIONS
+          value: error
+      - equal:
+          path: data.DB_LOGGING_MAX_EXECUTION_TIME
+          value: "1000"
+
+  - it: should set log level when log.level is set
+    set:
+      log:
+        level: debug
+    documentSelector:
+      path: metadata.name
+      value: n8n-logging-configmap
+    asserts:
+      - equal:
+          path: data.N8N_LOG_LEVEL
+          value: debug
+
+  - it: should set log output when log.output is set
+    set:
+      log:
+        output:
+          - file
+          - console
+    documentSelector:
+      path: metadata.name
+      value: n8n-logging-configmap
+    asserts:
+      - equal:
+          path: data.N8N_LOG_OUTPUT
+          value: file,console
+
+  - it: should set file logging options when log.output includes file
+    set:
+      log:
+        output:
+          - file
+          - console
+        file:
+          maxcount: "50"
+          maxsize: 32
+          location: /var/log/n8n
+    documentSelector:
+      path: metadata.name
+      value: n8n-logging-configmap
+    asserts:
+      - equal:
+          path: data.N8N_LOG_FILE_COUNT_MAX
+          value: "50"
+      - equal:
+          path: data.N8N_LOG_FILE_SIZE_MAX
+          value: "32"
+      - equal:
+          path: data.N8N_LOG_FILE_LOCATION
+          value: /var/log/n8n
+
+  - it: should set log scopes when log.scopes is set
+    set:
+      log:
+        scopes:
+          - concurrency
+          - redis
+          - scaling
+    documentSelector:
+      path: metadata.name
+      value: n8n-logging-configmap
+    asserts:
+      - equal:
+          path: data.N8N_LOG_SCOPES
+          value: concurrency,redis,scaling
+
+  - it: should set diagnostics enabled when diagnostics.enabled is true
+    set:
+      diagnostics:
+        enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-diagnostics-configmap
+    asserts:
+      - equal:
+          path: data.N8N_DIAGNOSTICS_ENABLED
+          value: "true"
+
+  - it: should set diagnostics configuration when diagnostics enabled is true
+    set:
+      diagnostics:
+        enabled: true
+        frontendConfig: "1a2b3c4d5e6f7g8h9i0j;https://telemetry.mydomain.com"
+        backendConfig: "1a2b3c4d5e6f7g8h9i0j;https://telemetry.mydomain.com"
+        postHog:
+          apiKey: "1a2b3c4d5e6f7g8h9i0j"
+          apiHost: "https://posthog.mydomain.com"
+    documentSelector:
+      path: metadata.name
+      value: n8n-diagnostics-configmap
+    asserts:
+      - equal:
+          path: data.N8N_DIAGNOSTICS_CONFIG_FRONTEND
+          value: "1a2b3c4d5e6f7g8h9i0j;https://telemetry.mydomain.com"
+      - equal:
+          path: data.N8N_DIAGNOSTICS_CONFIG_BACKEND
+          value: "1a2b3c4d5e6f7g8h9i0j;https://telemetry.mydomain.com"
+      - equal:
+          path: data.N8N_DIAGNOSTICS_POSTHOG_API_KEY
+          value: "1a2b3c4d5e6f7g8h9i0j"
+      - equal:
+          path: data.N8N_DIAGNOSTICS_POSTHOG_API_HOST
+          value: "https://posthog.mydomain.com"
+
+  - it: should not set diagnostics configuration when diagnostics enabled is false
+    set:
+      diagnostics:
+        enabled: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-diagnostics-configmap
+    asserts:
+      - equal:
+          path: data.N8N_DIAGNOSTICS_CONFIG_FRONTEND
+          value: ""
+      - equal:
+          path: data.N8N_DIAGNOSTICS_CONFIG_BACKEND
+          value: ""
+      - equal:
+          path: data.N8N_DIAGNOSTICS_POSTHOG_API_KEY
+          value: ""
+      - equal:
+          path: data.N8N_DIAGNOSTICS_POSTHOG_API_HOST
+          value: ""
+
+  - it: should set sentry dsn when sentry enabled is true
+    set:
+      sentry:
+        enabled: true
+        backendDsn: "https://sentry.mydomain.com"
+        frontendDsn: "https://sentry.mydomain.com"
+    documentSelector:
+      path: metadata.name
+      value: n8n-diagnostics-configmap
+    asserts:
+      - equal:
+          path: data.N8N_SENTRY_DSN
+          value: "https://sentry.mydomain.com"
+      - equal:
+          path: data.N8N_FRONTEND_SENTRY_DSN
+          value: "https://sentry.mydomain.com"
+      - equal:
+          path: data.N8N_VERSION
+          value: "1.0.0"
+      - equal:
+          path: data.ENVIRONMENT
+          value: "production"
+      - equal:
+          path: data.DEPLOYMENT_NAME
+          value: "n8n"
+
+  - it: should set sentry dsn empty when sentry enabled is false
+    set:
+      sentry:
+        enabled: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-diagnostics-configmap
+    asserts:
+      - equal:
+          path: data.N8N_SENTRY_DSN
+          value: ""
+      - equal:
+          path: data.N8N_FRONTEND_SENTRY_DSN
+          value: ""
+
+  - it: should set version notifications enabled when versionNotifications.enabled is true
+    set:
+      versionNotifications:
+        enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-version-notifications-configmap
+    asserts:
+      - equal:
+          path: data.N8N_VERSION_NOTIFICATIONS_ENABLED
+          value: "true"
+
+  - it: should set version notifications configurations when versionNotifications enabled is true
+    set:
+      versionNotifications:
+        enabled: true
+        endpoint: "https://version-notifications.mydomain.com"
+        infoUrl: "https://info.mydomain.com"
+    documentSelector:
+      path: metadata.name
+      value: n8n-version-notifications-configmap
+    asserts:
+      - equal:
+          path: data.N8N_VERSION_NOTIFICATIONS_ENDPOINT
+          value: "https://version-notifications.mydomain.com"
+      - equal:
+          path: data.N8N_VERSION_NOTIFICATIONS_INFO_URL
+          value: "https://info.mydomain.com"
+
+  - it: should set public api disabled when api.enabled is false
+    set:
+      api:
+        enabled: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-public-api-configmap
+    asserts:
+      - equal:
+          path: data.N8N_PUBLIC_API_DISABLED
+          value: "true"
+
+  - it: should set public api enabled when api.enabled is true
+    set:
+      api:
+        enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-public-api-configmap
+    asserts:
+      - equal:
+          path: data.N8N_PUBLIC_API_DISABLED
+          value: "false"
+
+  - it: should set public api endpoint when api.path is set
+    set:
+      api:
+        path: "/api"
+    documentSelector:
+      path: metadata.name
+      value: n8n-public-api-configmap
+    asserts:
+      - equal:
+          path: data.N8N_PUBLIC_API_ENDPOINT
+          value: "/api"
+
+  - it: should set public api swagger disabled when api.swagger.enabled is false
+    set:
+      api:
+        swagger:
+          enabled: false
+    documentSelector:
+      path: metadata.name
+      value: n8n-public-api-configmap
+    asserts:
+      - equal:
+          path: data.N8N_PUBLIC_API_SWAGGERUI_DISABLED
+          value: "true"
+
+  - it: should set public api swagger enabled when api.swagger.enabled is true
+    set:
+      api:
+        swagger:
+          enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-public-api-configmap
+    asserts:
+      - equal:
+          path: data.N8N_PUBLIC_API_SWAGGERUI_DISABLED
+          value: "false"
+
+  - it: should set execution mode to queue when db type set to postgresdb and worker.mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.EXECUTIONS_MODE
+          value: "queue"
+      - equal:
+          path: data.OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS
+          value: "true"
+
+  - it: should set execution mode to queue when db type set to postgresdb and webhook.mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.EXECUTIONS_MODE
+          value: "queue"
+      - equal:
+          path: data.OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS
+          value: "true"
+
+  - it: should set redis host redis-master and port when db type set to postgresdb and worker mode is queue and redis.enabled is true
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      redis:
+        enabled: true
+        master:
+          service:
+            ports:
+              redis: 6379
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_HOST
+          value: n8n-redis-master
+      - equal:
+          path: data.QUEUE_BULL_REDIS_PORT
+          value: "6379"
+
+  - it: should set redis host redis-master and port when db type set to postgresdb and webhook mode is queue and redis.enabled is true
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      redis:
+        enabled: true
+        master:
+          service:
+            ports:
+              redis: 6379
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_HOST
+          value: n8n-redis-master
+      - equal:
+          path: data.QUEUE_BULL_REDIS_PORT
+          value: "6379"
+
+  - it: should set redis host and port from external redis host and port when db type set to postgresdb and worker mode is queue and redis.enabled is false
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      externalRedis:
+        host: external-redis-hostname
+        port: 6380
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_HOST
+          value: external-redis-hostname
+      - equal:
+          path: data.QUEUE_BULL_REDIS_PORT
+          value: "6380"
+
+  - it: should set redis host and port from external redis host and port when db type set to postgresdb and webhook mode is queue and redis.enabled is false
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        host: external-redis-hostname
+        port: 6380
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_HOST
+          value: external-redis-hostname
+      - equal:
+          path: data.QUEUE_BULL_REDIS_PORT
+          value: "6380"
+
+  - it: should set disable production main process when db type set to postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.N8N_DISABLE_PRODUCTION_MAIN_PROCESS
+          value: "true"
+
+  - it: should set redis db when db type set to postgresdb and worker mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      externalRedis:
+        database: 1
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_DB
+          value: "1"
+
+  - it: should set redis db when db type set to postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        database: 1
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_DB
+          value: "1"
+
+  - it: should enable redis connection tls when externalRedis.tls.enabled, db type set to postgresdb and worker mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      externalRedis:
+        tls:
+          enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_TLS
+          value: "true"
+
+  - it: should enable redis connection tls when externalRedis.tls.enabled, db type set to postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        tls:
+          enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_TLS
+          value: "true"
+
+  - it: should enable redis dual-stack connection when externalRedis.dualStack, db type set to postgresdb and worker mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      externalRedis:
+        dualStack: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_DUALSTACK
+          value: "true"
+
+  - it: should enable redis dual-stack connection when externalRedis.dualStack, db type set to postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        dualStack: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_DUALSTACK
+          value: "true"
+
+  - it: should set redis cluster nodes when externalRedis.clusterNodes have multiple objects, db type set to postgresdb and worker mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+      externalRedis:
+        clusterNodes:
+          - host: redis-node-1
+            port: 1234
+          - host: redis-2
+            port: 5678
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_CLUSTER_NODES
+          value: "redis-node-1:1234,redis-2:5678"
+
+  - it: should set redis cluster nodes when externalRedis.clusterNodes have multiple objects, db type set to postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        clusterNodes:
+          - host: redis-node1
+            port: 4321
+          - host: redis2
+            port: 8765
+          - host: host-3
+            port: 9012
+    documentSelector:
+      path: metadata.name
+      value: n8n-queue-configmap
+    asserts:
+      - equal:
+          path: data.QUEUE_BULL_REDIS_CLUSTER_NODES
+          value: "redis-node1:4321,redis2:8765,host-3:9012"
+
+  - it: should set workflow history enabled when workflowHistory.enabled is true
+    set:
+      workflowHistory:
+        enabled: true
+    documentSelector:
+      path: metadata.name
+      value: n8n-workflow-history-configmap
+    asserts:
+      - equal:
+          path: data.N8N_WORKFLOW_HISTORY_ENABLED
+          value: "true"
+
+  - it: should set workflow history prune time when workflowHistory.pruneTime is set
+    set:
+      workflowHistory:
+        pruneTime: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-workflow-history-configmap
+    asserts:
+      - equal:
+          path: data.N8N_WORKFLOW_HISTORY_PRUNE_TIME
+          value: "100"
+
+  - it: should set task runners mode to internal when taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-broker-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_ENABLED
+          value: "true"
+      - equal:
+          path: data.N8N_RUNNERS_MODE
+          value: internal
+
+  - it: should set task timeout when taskRunners.taskTimeout is set
+    set:
+      taskRunners:
+        taskTimeout: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-broker-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_TASK_TIMEOUT
+          value: "100"
+
+  - it: should set task heartbeat interval when taskRunners.taskHeartbeatInterval is set
+    set:
+      taskRunners:
+        taskHeartbeatInterval: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-broker-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_HEARTBEAT_INTERVAL
+          value: "100"
+
+  - it: should set max concurrency when taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+        maxConcurrency: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-broker-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_MAX_CONCURRENCY
+          value: "100"
+
+  - it: should set broker address when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        broker:
+          address: "somewhereelse"
+          port: 1234
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-broker-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+          value: "somewhereelse"
+      - equal:
+          path: data.N8N_RUNNERS_BROKER_PORT
+          value: "1234"
+
+  - it: should set launcher log level when taskRunners.mode is external
+    set:
+      log:
+        level: debug
+      taskRunners:
+        mode: external
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_LAUNCHER_LOG_LEVEL
+          value: debug
+
+  - it: should set max concurrency when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        maxConcurrency: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_MAX_CONCURRENCY
+          value: "100"
+
+  - it: should set auto shutdown timeout when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        external:
+          autoShutdownTimeout: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT
+          value: "100"
+
+  - it: should set task timeout when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        taskTimeout: 100
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_TASK_TIMEOUT
+          value: "100"
+
+  - it: should set task broker uri when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        broker:
+          address: "somewhereelse"
+          port: 1234
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.N8N_RUNNERS_TASK_BROKER_URI
+          value: "http://somewhereelse:1234"
+
+  - it: should set node options when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        external:
+          nodeOptions:
+            - "--option1"
+            - "--option2"
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.NODE_OPTIONS
+          value: "--option1 --option2"
+
+  - it: should set timezone when taskRunners.mode is external
+    set:
+      timezone: "America/New_York"
+      taskRunners:
+        mode: external
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.GENERIC_TIMEZONE
+          value: "America/New_York"
+
+  - it: should set sentry dsn when taskRunners.mode is external and diagnostics.enabled is true
+    set:
+      sentry:
+        enabled: true
+        externalTaskRunnersDsn: "https://sentry.mydomain.com"
+      taskRunners:
+        mode: external
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.SENTRY_DSN
+          value: "https://sentry.mydomain.com"
+      - equal:
+          path: data.N8N_VERSION
+          value: "1.0.0"
+      - equal:
+          path: data.ENVIRONMENT
+          value: "production"
+      - equal:
+          path: data.DEPLOYMENT_NAME
+          value: "n8n"
+
+  - it: should set sentry dsn empty when taskRunners.mode is external and diagnostics.enabled is false
+    set:
+      diagnostics:
+        enabled: false
+      taskRunners:
+        mode: external
+    documentSelector:
+      path: metadata.name
+      value: n8n-task-runners-configmap
+    asserts:
+      - equal:
+          path: data.SENTRY_DSN
+          value: ""
+
+  - it: should set license environment variables when license.enabled is true
+    set:
+      license:
+        enabled: true
+        autoNenew:
+          enabled: false
+          offsetInHours: 1
+        serverUrl: "https://license.mydomain.com"
+        tenantId: 999
+    documentSelector:
+      path: metadata.name
+      value: n8n-license-configmap
+    asserts:
+      - equal:
+          path: data.N8N_LICENSE_AUTO_RENEW_ENABLED
+          value: "false"
+      - equal:
+          path: data.N8N_LICENSE_AUTO_RENEW_OFFSET
+          value: "3600"
+      - equal:
+          path: data.N8N_LICENSE_SERVER_URL
+          value: "https://license.mydomain.com"
+      - equal:
+          path: data.N8N_LICENSE_TENANT_ID
+          value: "999"
+
+  - it: should set default binary data mode from binaryData.mode
+    set:
+      binaryData:
+        mode: s3
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_DEFAULT_BINARY_DATA_MODE
+          value: s3
+
+  - it: should set available binary data modes from binaryData.availableModes when binaryData.mode is set
+    set:
+      binaryData:
+        mode: default
+        availableModes:
+          - filesystem
+          - s3
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_AVAILABLE_BINARY_DATA_MODES
+          value: filesystem,s3
+
+  - it: should set binary data storage path from binaryData.localStoragePath when binaryData.availableModes includes filesystem
+    set:
+      binaryData:
+        mode: default
+        availableModes:
+          - filesystem
+        localStoragePath: /home/node/.n8n/binaryData
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_BINARY_DATA_STORAGE_PATH
+          value: /home/node/.n8n/binaryData
+
+  - it: should set s3 configurations from binaryData.s3 with any region format when binaryData.availableModes includes s3
+    set:
+      binaryData:
+        mode: s3
+        availableModes:
+          - s3
+        s3:
+          host: s3.mydomain.com
+          bucketName: mybucket
+          bucketRegion: anyregion
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_HOST
+          value: s3.mydomain.com
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+          value: mybucket
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION
+          value: anyregion
+
+  - it: should set s3 configurations from binaryData.s3 when binaryData.availableModes includes s3
+    set:
+      binaryData:
+        mode: s3
+        availableModes:
+          - s3
+        s3:
+          host: s3.mydomain.com
+          bucketName: mybucket
+          bucketRegion: eu-central-1
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_HOST
+          value: s3.mydomain.com
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+          value: mybucket
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION
+          value: eu-central-1
+
+  - it: should set s3 configurations from minio when binaryData.availableModes includes s3 and minio is enabled
+    set:
+      minio:
+        enabled: true
+        buckets:
+          - name: fake-bucket
+            policy: none
+            purge: false
+            versioning: false
+      binaryData:
+        mode: s3
+        availableModes:
+          - s3
+        s3:
+          bucketRegion: eu-central-1
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_HOST
+          value: n8n-minio:9000
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+          value: fake-bucket
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION
+          value: eu-central-1
+
+  - it: should set bucket name from s3 object when binaryData.availableModes includes s3 and minio is enabled but buckets are not set
+    set:
+      minio:
+        enabled: true
+        buckets: []
+      binaryData:
+        mode: s3
+        availableModes:
+          - s3
+        s3:
+          bucketName: another-bucket
+          bucketRegion: eu-west-1
+    documentSelector:
+      path: metadata.name
+      value: n8n-binary-data-configmap
+    asserts:
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_HOST
+          value: n8n-minio:9000
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+          value: another-bucket
+      - equal:
+          path: data.N8N_EXTERNAL_STORAGE_S3_BUCKET_REGION
+          value: eu-west-1
+
+  - it: should match snapshot of default values
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot of external redis values
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+      externalRedis:
+        username: redis-username
+        password: redis-password
+        clusterNodes:
+          - host: redis-1
+            port: 6379
+          - host: redis-2
+            port: 6379
+        tls:
+          enabled: true
+        dualStack: true
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    asserts:
+      - matchSnapshot: { }

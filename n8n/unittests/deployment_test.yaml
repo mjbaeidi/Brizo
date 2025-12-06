@@ -1,0 +1,2173 @@
+suite: test deployment
+
+templates:
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+
+release:
+  name: n8n
+  namespace: n8n
+
+chart:
+  version: 1.0.0
+  appVersion: 1.0.0
+
+tests:
+  - it: should be custom service account when we do not create it
+    set:
+      serviceAccount:
+        create: false
+        name: customsa
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: customsa
+        template: deployment.yaml
+
+  - it: should set strategy to Recreate when strategy.type is Recreate
+    set:
+      strategy:
+        type: Recreate
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+        template: deployment.yaml
+
+  - it: should set strategy to RollingUpdate when strategy.type is RollingUpdate
+    set:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: RollingUpdate
+        template: deployment.yaml
+      - equal:
+          path: spec.strategy.rollingUpdate.maxUnavailable
+          value: 1
+        template: deployment.yaml
+      - equal:
+          path: spec.strategy.rollingUpdate.maxSurge
+          value: 1
+        template: deployment.yaml
+
+  - it: should set pod annotations when podAnnotations are set
+    set:
+      podAnnotations:
+        test: test
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations.test
+          value: test
+        template: deployment.yaml
+
+  - it: should set pod labels when podLabels are set
+    set:
+      podLabels:
+        test: test
+    asserts:
+      - equal:
+          path: spec.template.metadata.labels.test
+          value: test
+        template: deployment.yaml
+
+  - it: should set image pull secrets when imagePullSecrets are set
+    set:
+      imagePullSecrets:
+        - name: fake-image-pull-secret
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: fake-image-pull-secret
+        template: deployment.yaml
+
+  - it: should set pod security context when podSecurityContext is set
+    set:
+      podSecurityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1000
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+        template: deployment.yaml
+
+  - it: should set container security context when securityContext is set
+    set:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].securityContext.runAsUser
+          value: 1000
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].securityContext.runAsGroup
+          value: 1000
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].securityContext.runAsNonRoot
+          value: true
+        template: deployment.yaml
+
+  - it: should use image repository and tag from image when they set
+    set:
+      image:
+        repository: fake-image-repository/fake-image
+        tag: fake-tag
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].image
+          value: fake-image-repository/fake-image:fake-tag
+        template: deployment.yaml
+
+  - it: should use default image and chart app version as image tag when tag is not set
+    set:
+      image:
+        tag: ""
+    release:
+      name: outline
+      namespace: outline
+    chart:
+      version: 1.0.0
+      appVersion: 0.81.0
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].image
+          value: n8nio/n8n:0.81.0
+        template: deployment.yaml
+
+  - it: should set image pull policy when imagePullPolicy is set
+    set:
+      image.pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].imagePullPolicy
+          value: Always
+        template: deployment.yaml
+
+  - it: should set ports when service.port is set
+    set:
+      service:
+        port: 8080
+        name: fake-port
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].ports[0].name
+          value: fake-port
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].ports[0].containerPort
+          value: 8080
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].ports[0].protocol
+          value: TCP
+        template: deployment.yaml
+
+  - it: should set liveness probe when livenessProbe is set
+    set:
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: http
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+        successThreshold: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.httpGet.path
+          value: /healthz
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.initialDelaySeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.periodSeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.timeoutSeconds
+          value: 5
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.failureThreshold
+          value: 3
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.successThreshold
+          value: 1
+        template: deployment.yaml
+
+  - it: should set liveness probe when main.livenessProbe is set
+    set:
+      main:
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.httpGet.path
+          value: /healthz
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.initialDelaySeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.periodSeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.timeoutSeconds
+          value: 5
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.failureThreshold
+          value: 3
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].livenessProbe.successThreshold
+          value: 1
+        template: deployment.yaml
+
+  - it: should set readiness probe when readinessProbe is set
+    set:
+      readinessProbe:
+        httpGet:
+          path: /healthz/readiness
+          port: http
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+        successThreshold: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.httpGet.path
+          value: /healthz/readiness
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.initialDelaySeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.periodSeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.timeoutSeconds
+          value: 5
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.failureThreshold
+          value: 3
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.successThreshold
+          value: 1
+        template: deployment.yaml
+
+  - it: should set readiness probe when main.readinessProbe is set
+    set:
+      main:
+        readinessProbe:
+          httpGet:
+            path: /healthz/readiness
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.httpGet.path
+          value: /healthz/readiness
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.initialDelaySeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.periodSeconds
+          value: 10
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.timeoutSeconds
+          value: 5
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.failureThreshold
+          value: 3
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].readinessProbe.successThreshold
+          value: 1
+        template: deployment.yaml
+
+  - it: should set resources when resources are set
+    set:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 100Mi
+        limits:
+          cpu: 200m
+          memory: 200Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.requests.cpu
+          value: 100m
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.requests.memory
+          value: 100Mi
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.limits.cpu
+          value: 200m
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.limits.memory
+          value: 200Mi
+        template: deployment.yaml
+
+  - it: should set resources when main.resources are set
+    set:
+      main:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.requests.cpu
+          value: 100m
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.requests.memory
+          value: 100Mi
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.limits.cpu
+          value: 200m
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].resources.limits.memory
+          value: 200Mi
+        template: deployment.yaml
+
+  - it: should set hiring banner disabled
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_HIRING_BANNER_ENABLED
+            value: "false"
+        template: deployment.yaml
+
+  - it: should set node environment to production
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_ENV
+            value: production
+        template: deployment.yaml
+
+  - it: should set enforce settings file permissions
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+            value: "true"
+        template: deployment.yaml
+
+  - it: should set port environment variable when service.port is set
+    set:
+      service:
+        port: 8080
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_PORT
+            value: "8080"
+        template: deployment.yaml
+
+  - it: should set default locale environment variable when defaultLocale is set
+    set:
+      defaultLocale: de
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_DEFAULT_LOCALE
+            value: de
+        template: deployment.yaml
+
+  - it: should set timezone environment variable when timezone is set
+    set:
+      timezone: America/New_York
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: GENERIC_TIMEZONE
+            value: America/New_York
+        template: deployment.yaml
+
+  - it: should set graceful shutdown timeout environment variable when gracefulShutdownTimeout is set
+    set:
+      gracefulShutdownTimeout: 10
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_GRACEFUL_SHUTDOWN_TIMEOUT
+            value: "10"
+        template: deployment.yaml
+
+  - it: should use editor base url if it's set
+    set:
+      main:
+        editorBaseUrl: http://mycustomaddress.n8n
+      ingress:
+        enabled: true
+        hosts:
+          - host: n8n.mydomain.com
+            paths:
+              - path: /
+                pathType: Prefix
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EDITOR_BASE_URL
+            value: http://mycustomaddress.n8n
+        template: deployment.yaml
+
+  - it: should set editor base URL when ingress host is set
+    set:
+      ingress:
+        enabled: true
+        hosts:
+          - host: n8n.mydomain.com
+            paths:
+              - path: /
+                pathType: Prefix
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EDITOR_BASE_URL
+            value: http://n8n.mydomain.com
+        template: deployment.yaml
+
+  - it: should set editor base URL with ssl when ingress host and tls are set
+    set:
+      ingress:
+        enabled: true
+        hosts:
+          - host: n8n.mydomain.com
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: n8n-tls
+            hosts:
+              - n8n.mydomain.com
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EDITOR_BASE_URL
+            value: https://n8n.mydomain.com
+        template: deployment.yaml
+
+  - it: should set postgresdb user environment variable when db type is postgresdb and postgresql.enabled is true and postgresql.auth.username is set
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+        auth:
+          username: n8npostgres
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: DB_POSTGRESDB_USER
+            value: n8npostgres
+        template: deployment.yaml
+
+  - it: should set postgresdb user environment variable when db type is postgresdb and postgresql.enabled is false and externalPostgresql.username is set
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: false
+      externalPostgresql:
+          username: n8npostgres
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: DB_POSTGRESDB_USER
+            value: n8npostgres
+        template: deployment.yaml
+
+  - it: should set postgresdb password environment variable from secret with key password when db type is postgresdb and postgresql.enabled is true and postgresql.auth.password is set
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+        auth:
+          username: n8npostgres
+          password: n8npostgrespassword
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: DB_POSTGRESDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: n8n-postgresql
+                key: password
+                optional: true
+        template: deployment.yaml
+
+  - it: should set postgresdb password environment variable from secret with key postgres-password when db type is postgresdb and postgresql.auth.username is not set
+    set:
+      db:
+        type: postgresdb
+      postgresql:
+        enabled: true
+        auth:
+          username: ""
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: DB_POSTGRESDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: n8n-postgresql
+                key: postgres-password
+                optional: true
+        template: deployment.yaml
+
+  - it: should set postgresdb password environment variable from secret with key postgres-password and with externalPostgresql.existingSecret when db type is postgresdb and externalPostgresql.existingSecret is set
+    set:
+      db:
+        type: postgresdb
+      externalPostgresql:
+        existingSecret: custom-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: DB_POSTGRESDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: custom-secret
+                key: postgres-password
+                optional: true
+        template: deployment.yaml
+
+  - it: should set redis username environment variable when worker mode is queue and db type is postgresdb
+    set:
+      worker:
+        mode: queue
+      db:
+        type: postgresdb
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: QUEUE_BULL_REDIS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: n8n-redis
+                key: redis-username
+                optional: true
+        template: deployment.yaml
+
+  - it: should set redis username environment variable when worker mode is queue and db type is postgresdb and externalRedis.existingSecret is set
+    set:
+      worker:
+        mode: queue
+      db:
+        type: postgresdb
+      externalRedis:
+        existingSecret: custom-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: QUEUE_BULL_REDIS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: custom-secret
+                key: redis-username
+                optional: true
+        template: deployment.yaml
+
+  - it: should set redis password environment variable when worker mode is queue and db type is postgresdb
+    set:
+      worker:
+        mode: queue
+      db:
+        type: postgresdb
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: QUEUE_BULL_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: n8n-redis
+                key: redis-password
+                optional: true
+        template: deployment.yaml
+
+  - it: should set redis password environment variable when worker mode is queue and db type is postgresdb and externalRedis.existingSecret is set
+    set:
+      worker:
+        mode: queue
+      db:
+        type: postgresdb
+      externalRedis:
+        existingSecret: custom-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: QUEUE_BULL_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: custom-secret
+                key: redis-password
+                optional: true
+        template: deployment.yaml
+
+  - it: should set webhook url environment variable when webhook.url is set
+    set:
+      webhook:
+        url: https://example.com
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: WEBHOOK_URL
+            value: https://example.com
+        template: deployment.yaml
+
+  - it: should set extra environment variables when extraEnvVars is set
+    set:
+      extraEnvVars:
+        N8N_EXTRA_ENV_VAR: n8nextraenvvar
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTRA_ENV_VAR
+            value: n8nextraenvvar
+        template: deployment.yaml
+
+  - it: should set extra environment variables when main.extraEnvVars is set
+    set:
+      main:
+        extraEnvVars:
+          N8N_EXTRA_ENV_VAR: n8nextraenvvar
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTRA_ENV_VAR
+            value: n8nextraenvvar
+        template: deployment.yaml
+
+  - it: should set database configurations from database configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-database-configmap
+        template: deployment.yaml
+
+  - it: should set logging configurations from logging configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-logging-configmap
+        template: deployment.yaml
+
+  - it: should set diagnostics configurations from diagnostics configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-diagnostics-configmap
+        template: deployment.yaml
+
+  - it: should set version notifications configurations from version notifications configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-version-notifications-configmap
+        template: deployment.yaml
+
+  - it: should set public api configurations from public api configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-public-api-configmap
+        template: deployment.yaml
+
+  - it: should set workflow history configurations from workflow history configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-workflow-history-configmap
+        template: deployment.yaml
+
+  - it: should set task broker configurations from task broker configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-task-broker-configmap
+        template: deployment.yaml
+
+  - it: should set metrics configurations from metrics configmap
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-metrics-configmap
+        template: deployment.yaml
+
+  - it: should set encryption key from encryption key secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: n8n-encryption-key-secret-v2
+        template: deployment.yaml
+
+  - it: should set queue configurations from queue configmap when db type is postgresdb and worker mode is queue
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-queue-configmap
+        template: deployment.yaml
+
+  - it: should set queue configurations from queue configmap when db type is postgresdb and webhook mode is queue
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-queue-configmap
+        template: deployment.yaml
+
+  - it: should set extra secret names for envFrom when extraSecretNamesForEnvFrom is set
+    set:
+      extraSecretNamesForEnvFrom:
+        - secret1
+        - secret2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: secret1
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: secret2
+        template: deployment.yaml
+
+  - it: should set extra secret names for envFrom when main.extraSecretNamesForEnvFrom is set
+    set:
+      main:
+        extraSecretNamesForEnvFrom:
+          - secret1
+          - secret2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: secret1
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: secret2
+        template: deployment.yaml
+
+  - it: should set extra volume mounts when volumeMounts is set
+    set:
+      volumeMounts:
+        - name: fake-volume
+          mountPath: /fake-path
+          readOnly: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: fake-volume
+            mountPath: /fake-path
+            readOnly: true
+        template: deployment.yaml
+
+  - it: should set extra volume mounts when main.volumeMounts is set
+    set:
+      main:
+        volumeMounts:
+          - name: fake-volume
+            mountPath: /fake-path
+            readOnly: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: fake-volume
+            mountPath: /fake-path
+            readOnly: true
+        template: deployment.yaml
+
+  - it: should set extra volumes when volumes is set
+    set:
+      volumes:
+        - name: foo
+          secret:
+            secretName: mysecret
+            optional: false
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: foo
+            secret:
+              secretName: mysecret
+              optional: false
+        template: deployment.yaml
+
+  - it: should set extra volumes when main.volumes is set
+    set:
+      main:
+        volumes:
+          - name: foo
+            secret:
+              secretName: mysecret
+              optional: false
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: foo
+            secret:
+              secretName: mysecret
+              optional: false
+        template: deployment.yaml
+
+  - it: should use private npm registry when only npmRegistry.enabled is true
+    set:
+      npmRegistry:
+        enabled: true
+        url: "https://my-registry.com"
+        secretName: "n8n-npm-registry-secret"
+        secretKey: "npmrc"
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: npmrc
+            secret:
+              optional: true
+              secretName: n8n-npm-registry-secret
+          any: true
+        template: deployment.yaml
+
+  - it: should set node modules emptyDir when nodes.external.packages is set and main.persistence.enabled is false
+    set:
+      nodes:
+        external:
+          packages:
+            - "moment@2.29.4"
+      main:
+        persistence:
+          enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: node-modules
+            emptyDir: {}
+          any: true
+        template: deployment.yaml
+
+  - it: should set node modules pvc when main.persistence.enabled is true and main.persistence.existingClaim is not set
+    set:
+      main:
+        persistence:
+          enabled: true
+          existingClaim: ""
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: node-modules
+            persistentVolumeClaim:
+              claimName: n8n-main-persistence
+        template: deployment.yaml
+
+  - it: should set node modules pvc when main.persistence.enabled is true and main.persistence.existingClaim is set
+    set:
+      main:
+        persistence:
+          enabled: true
+          existingClaim: "test-existing-claim"
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: node-modules
+            persistentVolumeClaim:
+              claimName: test-existing-claim
+        template: deployment.yaml
+
+  - it: should set CA certificate volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.base64EncodedCertificateAuthorityFile are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedCertificateAuthorityFile: Q0EgZmlsZSBjb250ZW50
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-ca
+            mountPath: /home/node/certs/ca/ca.crt
+            subPath: ca.crt
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-ca
+            secret:
+              secretName: n8n-pg-ssl-ca
+              items:
+                - key: ca.crt
+                  path: ca.crt
+          any: true
+        template: deployment.yaml
+
+  - it: should set CA certificate volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.existingCertificateAuthorityFileSecret.name are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingCertificateAuthorityFileSecret:
+              name: ca-cert-secret
+              key: root.cert
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-ca
+            mountPath: /home/node/certs/ca/ca.crt
+            subPath: ca.crt
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-ca
+            secret:
+              secretName: ca-cert-secret
+              items:
+                - key: root.cert
+                  path: ca.crt
+          any: true
+        template: deployment.yaml
+
+  - it: should set certificate volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.base64EncodedCertFile are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedCertFile: Y2VydGlmaWNhdGUgZmlsZSBjb250ZW50
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-cert
+            mountPath: /home/node/certs/cert/cert.crt
+            subPath: cert.crt
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-cert
+            secret:
+              secretName: n8n-pg-ssl-cert
+              items:
+                - key: cert.crt
+                  path: cert.crt
+          any: true
+        template: deployment.yaml
+
+  - it: should set certificate volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.existingCertFileSecret.name are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingCertFileSecret:
+              name: my-cert-secret
+              key: client.cert
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-cert
+            mountPath: /home/node/certs/cert/cert.crt
+            subPath: cert.crt
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-cert
+            secret:
+              secretName: my-cert-secret
+              items:
+                - key: client.cert
+                  path: cert.crt
+          any: true
+        template: deployment.yaml
+
+  - it: should set certificate private key volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.base64EncodedPrivateKeyFile are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            base64EncodedPrivateKeyFile: Y2VydGlmaWNhdGUgcHJpdmF0ZSBrZXkgZmlsZSBjb250ZW50
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-key
+            mountPath: /home/node/certs/key/cert.key
+            subPath: cert.key
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-key
+            secret:
+              secretName: n8n-pg-ssl-key
+              items:
+                - key: cert.key
+                  path: cert.key
+          any: true
+        template: deployment.yaml
+
+  - it: should set certificate private key volume and volumeMount when db.type postgresdb, postgresdb.ssl.enabled, and postgresdb.ssl.existingPrivateKeyFileSecret.name are set
+    set:
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingPrivateKeyFileSecret:
+              name: my-cert-private-key-secret
+              key: client.key
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: pg-ssl-key
+            mountPath: /home/node/certs/key/cert.key
+            subPath: cert.key
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pg-ssl-key
+            secret:
+              secretName: my-cert-private-key-secret
+              items:
+                - key: client.key
+                  path: cert.key
+          any: true
+        template: deployment.yaml
+
+  - it: should set node selector when nodeSelector is set
+    set:
+      nodeSelector:
+        disktype: ssd
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector.disktype
+          value: ssd
+        template: deployment.yaml
+
+  - it: should set affinity when affinity is set
+    set:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: disktype
+                    operator: In
+                    values:
+                      - ssd
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 1
+            preference:
+              matchExpressions:
+                - key: disktype
+                  operator: In
+                  values:
+                    - ssd
+        template: deployment.yaml
+
+  - it: should set affinity when main.affinity is set
+    set:
+      main:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: n8n
+              topologyKey: kubernetes.io/hostname
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution
+          content:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: n8n
+            topologyKey: kubernetes.io/hostname
+        template: deployment.yaml
+
+  - it: should set tolerations when tolerations are set
+    set:
+      tolerations:
+        - key: fake-key
+          operator: fake-operator
+          value: fake-value
+    asserts:
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: fake-key
+            operator: fake-operator
+            value: fake-value
+        template: deployment.yaml
+
+  - it: should set task runner container when taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+        external:
+          port: 1234
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].image
+          value: n8nio/n8n:1.0.0
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].imagePullPolicy
+          value: IfNotPresent
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].command
+          value: ["/usr/local/bin/task-runner-launcher"]
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].args
+          value: ["javascript"]
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].ports[0].containerPort
+          value: 1234
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].ports[0].protocol
+          value: TCP
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].livenessProbe.httpGet.path
+          value: /healthz
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].livenessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].readinessProbe.httpGet.path
+          value: /healthz
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].readinessProbe.httpGet.port
+          value: http
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].resources
+          value:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: N8N_RUNNERS_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: n8n-task-runners-secret
+                key: auth-token
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].envFrom
+          content:
+            configMapRef:
+              name: n8n-task-runners-configmap
+        template: deployment.yaml
+
+  - it: should add license info command when license.enabled is true and license.activationKey is set
+    set:
+      license:
+        enabled: true
+        activationKey: fake-activation-key
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].command
+          content:
+            "/bin/sh"
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].args
+          content:
+            "-c"
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].args
+          content:
+            "n8n license:info && n8n"
+          any: true
+        template: deployment.yaml
+
+  - it: should add license info command when license.enabled is true and license.existingActivationKeySecret is set
+    set:
+      license:
+        enabled: true
+        existingActivationKeySecret: fake-existing-activation-key-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].command
+          content:
+            "/bin/sh"
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].args
+          content:
+            "-c"
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].args
+          content:
+            "n8n license:info && n8n"
+          any: true
+        template: deployment.yaml
+
+  - it: should have multi main setup enabled when main.count is greater than 1
+    set:
+      main:
+        count: 2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_MULTI_MAIN_SETUP_ENABLED
+            value: "true"
+          any: true
+        template: deployment.yaml
+
+  - it: should use license configmap and secret when license.enabled is true
+    set:
+      license:
+        enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            configMapRef:
+              name: n8n-license-configmap
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].envFrom
+          content:
+            secretRef:
+              name: n8n-license-activation-key
+        template: deployment.yaml
+
+  - it: should set aws access key id from s3 object when binaryData.mode is s3 and minio is not enabled
+    set:
+      minio:
+        enabled: false
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+        s3:
+          accessKey: fake-access-key-id
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: access-key-id
+                name: n8n-s3-secret
+        template: deployment.yaml
+
+  - it: should set aws access key from rootUser key when binaryData.mode is s3 and minio is enabled and users are not set
+    set:
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+      minio:
+        enabled: true
+        users: []
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: rootUser
+                name: n8n-minio
+        template: deployment.yaml
+
+  - it: should set aws access key from existing secret when binaryData.mode is s3 and minio is not enabled
+    set:
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+        s3:
+          existingSecret: fake-existing-secret
+      minio:
+        enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: access-key-id
+                name: fake-existing-secret
+        template: deployment.yaml
+
+  - it: should set aws secret access key from s3 object when binaryData.mode is s3 and minio is not enabled
+    set:
+      minio:
+        enabled: false
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+        s3:
+          accessSecret: fake-secret-access-key
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: secret-access-key
+                name: n8n-s3-secret
+        template: deployment.yaml
+
+  - it: should set aws secret access key from rootPassword key when binaryData.mode is s3 and minio is enabled and users are not set
+    set:
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+      minio:
+        enabled: true
+        users: []
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: rootPassword
+                name: n8n-minio
+        template: deployment.yaml
+
+  - it: should set aws secret access key from existing secret when binaryData.mode is s3 and minio is not enabled
+    set:
+      binaryData:
+        availableModes:
+          - filesystem
+          - s3
+        mode: s3
+        s3:
+          existingSecret: fake-existing-secret
+      minio:
+        enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: secret-access-key
+                name: fake-existing-secret
+        template: deployment.yaml
+
+  - it: should set npm install init container with mount to internal task runner when nodes.external.packages is set and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        external:
+          packages:
+            - "moment@2.29.4"
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: node-modules
+            mountPath: "/npmdata"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: community-node-modules
+            mountPath: "/nodesdata/nodes"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: node-modules
+            mountPath: "/home/node/.n8n"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: node-modules
+            emptyDir: {}
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_EXTERNAL
+            value: "moment"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow builtin node functions in internal task runner when nodes.builtin.modules is set and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        builtin:
+          enabled: true
+          modules:
+            - "fs"
+            - "crypto"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_BUILTIN
+            value: "fs,crypto"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow all builtin node functions in internal task runner when nodes.builtin.modules is enabled and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        builtin:
+          enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_BUILTIN
+            value: "*"
+          any: true
+        template: deployment.yaml
+
+  - it: should set npm install init container with mount to external task runner when nodes.external.packages is set and taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+      nodes:
+        external:
+          packages:
+            - "moment@2.29.4"
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: node-modules
+            mountPath: "/npmdata"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: community-node-modules
+            mountPath: "/nodesdata/nodes"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].volumeMounts
+          content:
+            name: node-modules
+            mountPath: "/home/node/.n8n"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: node-modules
+            emptyDir: {}
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_EXTERNAL
+            value: "moment"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow all external npm packages when nodes.external.allowAll is true and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        external:
+          allowAll: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_EXTERNAL
+            value: "*"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow all external npm packages for external task runner when nodes.external.allowAll is true and taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+      nodes:
+        external:
+          allowAll: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_EXTERNAL
+            value: "*"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow builtin node functions in internal task runner when nodes.builtin.modules is set and taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+      nodes:
+        builtin:
+          enabled: true
+          modules:
+            - "fs"
+            - "crypto"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_BUILTIN
+            value: "fs,crypto"
+          any: true
+        template: deployment.yaml
+
+  - it: should only keep npm packages and not community packages when nodes.external.packages is set and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        external:
+          packages:
+            - "moment@2.29.4"
+            - "n8n-nodes-python@0.1.4"
+            - "n8n-nodes-chatwoot@0.1.40"
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].args[0]
+          value: |
+            export PACKAGES="moment@2.29.4 n8n-nodes-python@0.1.4 n8n-nodes-chatwoot@0.1.40"
+            export COMMUNITY_PACKAGES="n8n-nodes-python@0.1.4 n8n-nodes-chatwoot@0.1.40"
+            export NON_COMMUNITY_PACKAGES="moment@2.29.4"
+            echo "$PACKAGES" | sha256sum > /npmdata/packages.hash.new
+            if [ ! -f /npmdata/packages.hash ] || ! cmp /npmdata/packages.hash /npmdata/packages.hash.new; then
+              if [ -n "$NON_COMMUNITY_PACKAGES" ]; then
+                npm install --loglevel info --no-save $NON_COMMUNITY_PACKAGES --prefix /npmdata
+              fi
+              if [ -n "$COMMUNITY_PACKAGES" ]; then
+                npm install --loglevel info --no-save $COMMUNITY_PACKAGES --prefix /nodesdata/nodes
+              fi
+              mv /npmdata/packages.hash.new /npmdata/packages.hash
+            else
+              rm /npmdata/packages.hash.new
+            fi
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_EXTERNAL
+            value: "moment"
+          any: true
+        template: deployment.yaml
+
+  - it: should allow all builtin node functions in external task runner when nodes.builtin.modules is enabled and taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+      nodes:
+        builtin:
+          enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: NODE_FUNCTION_ALLOW_BUILTIN
+            value: "*"
+          any: true
+        template: deployment.yaml
+
+  - it: should reinstall missing packages when nodes.external.reinstallMissingPackages is true and taskRunners.mode is internal
+    set:
+      taskRunners:
+        mode: internal
+      nodes:
+        external:
+          reinstallMissingPackages: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].env
+          content:
+            name: N8N_REINSTALL_MISSING_PACKAGES
+            value: "true"
+          any: true
+        template: deployment.yaml
+
+  - it: should reinstall missing packages when nodes.external.reinstallMissingPackages is true and taskRunners.mode is external
+    set:
+      taskRunners:
+        mode: external
+      nodes:
+        external:
+          reinstallMissingPackages: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].env
+          content:
+            name: N8N_REINSTALL_MISSING_PACKAGES
+            value: "true"
+          any: true
+        template: deployment.yaml
+
+  - it: should use private npm registry when only npmRegistry.enabled is true
+    set:
+      npmRegistry:
+        enabled: true
+        url: "https://my-registry.com"
+        secretName: "n8n-npm-registry-secret"
+        secretKey: "npmrc"
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: npmrc
+            secret:
+              optional: true
+              secretName: n8n-npm-registry-secret
+          any: true
+        template: deployment.yaml
+
+  - it: should use private npm registry when external packages are set and npmRegistry.enabled is true
+    set:
+      nodes:
+        external:
+          packages:
+            - "@mycompany/custom-n8n-functions@1.0.0"
+      npmRegistry:
+        enabled: true
+        url: "https://my-registry.com"
+        secretName: "n8n-npm-registry-secret"
+        secretKey: "npmrc"
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: npmrc
+            mountPath: "/home/node/.npmrc"
+            subPath: "npmrc"
+            readOnly: true
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: node-modules
+            mountPath: "/npmdata"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: community-node-modules
+            mountPath: "/nodesdata/nodes"
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: npmrc
+            secret:
+              optional: true
+              secretName: n8n-npm-registry-secret
+          any: true
+        template: deployment.yaml
+
+  - it: should add init container to main pod when main.initContainers is defined
+    set:
+      main:
+        initContainers:
+          - name: my-init-container
+            image: "my-image:1.0.0"
+            imagePullPolicy: IfNotPresent
+            command:
+              - sleep
+              - infinity
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: my-init-container
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: "my-image:1.0.0"
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].imagePullPolicy
+          value: IfNotPresent
+        template: deployment.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value:
+            - sleep
+            - infinity
+        template: deployment.yaml
+
+  - it: should add extra containers to main pod when main.extraContainers is defined
+    set:
+      main:
+        extraContainers:
+          - name: my-extra-container
+            image: "my-image:1.0.0"
+            imagePullPolicy: IfNotPresent
+            command:
+              - sleep
+              - infinity
+    asserts:
+      - contains:
+          path: spec.template.spec.containers
+          content:
+            name: my-extra-container
+            image: "my-image:1.0.0"
+            imagePullPolicy: IfNotPresent
+            command:
+              - sleep
+              - infinity
+          any: true
+        template: deployment.yaml
+
+  - it: should set dnsPolicy when dnsPolicy is set
+    set:
+      dnsPolicy: ClusterFirst
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: ClusterFirst
+        template: deployment.yaml
+
+  - it: should set dnsConfig when dnsConfig is set
+    set:
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 1.0.0.1
+    asserts:
+      - contains:
+          path: spec.template.spec.dnsConfig.nameservers
+          content:
+            1.1.1.1
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.dnsConfig.nameservers
+          content:
+            1.0.0.1
+          any: true
+        template: deployment.yaml
+
+  - it: should set dnsPolicy and dnsConfig when dnsPolicy and dnsConfig are set
+    set:
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 1.0.0.1
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: None
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.dnsConfig.nameservers
+          content:
+            1.1.1.1
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.dnsConfig.nameservers
+          content:
+            1.0.0.1
+          any: true
+        template: deployment.yaml
+
+  - it: should add hostAliases to main pod when main.hostAliases is defined
+    set:
+      main:
+        hostAliases:
+          - ip: 1.1.1.1
+            hostnames:
+              - "my-host.com"
+    asserts:
+      - contains:
+          path: spec.template.spec.hostAliases
+          content:
+            ip: 1.1.1.1
+            hostnames:
+              - "my-host.com"
+          any: true
+        template: deployment.yaml
+
+  - it: should use volume name when volumeName is set and taskRunners.mode is internal
+    set:
+      nodes:
+        external:
+          packages:
+            - fake-package
+      main:
+        persistence:
+          volumeName: fake-volume-name
+      taskRunners:
+        mode: internal
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: fake-volume-name
+            mountPath: /npmdata
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-main")].volumeMounts
+          content:
+            name: fake-volume-name
+            mountPath: /home/node/.n8n
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: fake-volume-name
+            emptyDir: {}
+          any: true
+        template: deployment.yaml
+
+  - it: should use volume name when volumeName is set and taskRunners.mode is external
+    set:
+      nodes:
+        external:
+          packages:
+            - fake-package
+      main:
+        persistence:
+          enabled: true
+          volumeName: fake-volume-name
+      taskRunners:
+        mode: external
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[?(@.name == "npm-install")].volumeMounts
+          content:
+            name: fake-volume-name
+            mountPath: /npmdata
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "n8n-task-runners")].volumeMounts
+          content:
+            name: fake-volume-name
+            mountPath: /home/node/.n8n
+            readOnly: false
+          any: true
+        template: deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: fake-volume-name
+            persistentVolumeClaim:
+              claimName: n8n-main-persistence
+          any: true
+        template: deployment.yaml
+
+  - it: should set runtimeClassName when main.runtimeClassName is defined
+    set:
+      main:
+        runtimeClassName: "my-runtime-class"
+    asserts:
+      - equal:
+          path: spec.template.spec.runtimeClassName
+          value: my-runtime-class
+        template: deployment.yaml
+
+  - it: should match snapshot of default values
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    set:
+      encryptionKey: "test-encryption-key"
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot of main persistence
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    set:
+      encryptionKey: "test-encryption-key"
+      main:
+        count: 1
+        persistence:
+          enabled: true
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot of main persistence with multiple main node and mode read write many
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    set:
+      encryptionKey: "test-encryption-key"
+      main:
+        count: 3
+        persistence:
+          enabled: true
+          accessMode: ReadWriteMany
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot of postgres ssl certificate values
+    release:
+      name: n8n
+      namespace: n8n
+    chart:
+      version: 1.0.0
+      appVersion: 1.0.0
+    set:
+      encryptionKey: "test-encryption-key"
+      db:
+        type: postgresdb
+        postgresdb:
+          ssl:
+            enabled: true
+            existingCertificateAuthorityFileSecret:
+              name: my-ca-cert-secret
+              key: root.crt
+            existingCertFileSecret:
+              name: my-client-cert-secret
+              key: client.crt
+            existingPrivateKeyFileSecret:
+              name: my-client-cert-private-key-secret
+              key: client.key
+    asserts:
+      - matchSnapshot: { }

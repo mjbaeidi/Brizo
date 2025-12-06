@@ -1,0 +1,23 @@
+{{- if .Values.sharedStorage.enabled -}}
+{{- $pvcName := default (include "n8n-shared-storage.persistence.fullname" .) .Values.sharedStorage.name -}}
+{{- $pvc := (lookup "v1" "PersistentVolumeClaim" .Release.Namespace $pvcName) -}}
+{{- if not $pvc -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $pvcName }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # This ensures the PVC is NOT deleted when you run 'helm uninstall'
+    "helm.sh/resource-policy": keep
+  labels:
+    {{- include "n8n-shared-storage.persistence.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.sharedStorage.accessMode | quote }}
+  storageClassName: {{ .Values.sharedStorage.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.sharedStorage.size | quote }}
+{{- end -}}
+{{- end -}}

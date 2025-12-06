@@ -1,0 +1,159 @@
+suite: test hpa
+
+templates:
+  - hpa.yaml
+
+release:
+  name: n8n
+  namespace: n8n
+
+chart:
+  version: 1.0.0
+  appVersion: 1.0.0
+
+tests:
+  - it: should not create hpa resource for webhook node when webhook regular mode enabled
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: regular
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not create hpa resource for webhook node when autoscaling is disabled
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create hpa resource for webhook node when webhook queue mode enabled and webhook.autoscaling.enabled is true
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: 80
+    documentSelector:
+      path: metadata.name
+      value: n8n-webhook
+    asserts:
+      - equal:
+          path: spec.metrics[0].type
+          value: Resource
+      - equal:
+          path: spec.metrics[0].resource.name
+          value: cpu
+      - equal:
+          path: spec.metrics[0].resource.target.type
+          value: Utilization
+      - equal:
+          path: spec.metrics[0].resource.target.averageUtilization
+          value: 80
+
+  - it: should not create hpa resource for worker node when worker regular mode enabled
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: regular
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not create hpa resource for worker node when autoscaling is disabled
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create hpa resource for worker node when worker queue mode enabled and worker.autoscaling.enabled is true
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+        count: 1
+        allNodes: false
+        autoscaling:
+          enabled: true
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: 80
+    documentSelector:
+      path: metadata.name
+      value: n8n-worker
+    asserts:
+      - equal:
+          path: spec.metrics[0].type
+          value: Resource
+      - equal:
+          path: spec.metrics[0].resource.name
+          value: cpu
+      - equal:
+          path: spec.metrics[0].resource.target.type
+          value: Utilization
+      - equal:
+          path: spec.metrics[0].resource.target.averageUtilization
+          value: 80
+
+  - it: should match snapshot of worker hpa default values
+    set:
+      db:
+        type: postgresdb
+      worker:
+        mode: queue
+        autoscaling:
+          enabled: true
+    asserts:
+      - matchSnapshot: { }
+
+  - it: should match snapshot of webhook hpa default values
+    set:
+      db:
+        type: postgresdb
+      webhook:
+        mode: queue
+        autoscaling:
+          enabled: true
+    asserts:
+      - matchSnapshot: { }

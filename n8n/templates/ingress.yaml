@@ -1,0 +1,149 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "n8n.fullname" . }}
+  labels:
+    {{- include "n8n.main.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+      {{- if and ($.Values.webhook.url) (and (eq $.Values.db.type "postgresdb") (eq $.Values.webhook.mode "queue")) }}
+      {{- $webhookUrl := $.Values.webhook.url | trimPrefix "http://" | trimPrefix "https://" | trimSuffix "/" }}
+        {{- if and ((gt (len $.Values.ingress.hosts) 0)) (ne $webhookUrl .host) }}
+    - host: {{ $webhookUrl | quote }}
+      http:
+        paths:
+        {{- end }}
+        {{- range .paths }}
+          - path: {{ .path }}webhook/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.webhook.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}webhook-test/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}form/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.webhook.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}form-test/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- if $.Values.webhook.mcp.enabled }}
+          - path: {{ .path }}mcp/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+              {{- if or (gt (int $.Values.webhook.count) 1) ($.Values.webhook.autoscaling.enabled) ($.Values.webhook.allNodes) }}
+                name: {{ include "n8n.mcp-webhook.fullname" $ }}
+              {{- else }}
+                name: {{ include "n8n.webhook.fullname" $ }}
+              {{- end }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}mcp-test/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+          - path: {{ .path }}rest/oauth2-credential/callback
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}static/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}webhook-waiting/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.webhook.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          - path: {{ .path }}form-waiting/
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "n8n.webhook.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+{{- end }}
