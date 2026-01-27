@@ -4,6 +4,10 @@ replicaCount: 1
 namespace:
   name: prod
 
+image:
+  repository: registry.okcs.com/containers-okcs/flask-apm-app
+  tag: v4.0.6
+
 ingress:
   host: prod.kuber.brizo.me
 
@@ -12,7 +16,36 @@ resources:
     cpu: 500m
     memory: 512Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 300m
+    memory: 328Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
+  stabilizationWindowSeconds: 20
 
 environment: prod
+
+deploymentStrategy:
+  maxUnavailable: 0 
+  maxSurge: 1
+
+probes:
+  readiness:
+    enabled: false
+    path: /hc
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+  liveness:
+    enabled: false
+    path: /hc
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3

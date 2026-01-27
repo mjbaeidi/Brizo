@@ -1,0 +1,109 @@
+---
+- name: Install and Register GitLab Runner in Docker
+  hosts: gitlab_runners
+  become: true
+
+  vars:
+    # ----------------------------
+    # GitLab Runner configuration
+    # ----------------------------
+    gitlab_runner_container_name: gitlab-runner-test
+    gitlab_runner_image: gitlab/gitlab-runner:latest
+    gitlab_runner_config_dir: /srv/gitlab-runner/config
+    gitlab_runner_ssl_dir: "{{ gitlab_runner_config_dir }}/ssl"
+
+    # ----------------------------
+    # GitLab server
+    # ----------------------------
+    gitlab_url: "https://gitlab.brizo.me"
+    gitlab_host: "gitlab.brizo.me"
+    gitlab_ip: "10.192.127.229"
+    gitlab_ca_src: "/root/gitlab-brizo-ca.crt"
+    gitlab_ca_dest: "{{ gitlab_runner_ssl_dir }}/gitlab-brizo-ca.crt"
+
+    # ----------------------------
+    # Registration
+    # ----------------------------
+    gitlab_runner_token: "glrt-t1_WWQtpAXXuBNqo9M7wGGH"
+    gitlab_runner_description: "docker-runner-ansible"
+    gitlab_runner_executor: "docker"
+    gitlab_runner_docker_image: "alpine:latest"
+    gitlab_runner_tags: "test,ansible"
+    gitlab_runner_register: true
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - python3-pip
+          - docker.io
+        state: present
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+
+    - name: Create GitLab Runner config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ gitlab_runner_config_dir }}"
+        - "{{ gitlab_runner_ssl_dir }}"
+
+    - name: Copy GitLab CA certificate
+      copy:
+        src: "{{ gitlab_ca_src }}"
+        dest: "{{ gitlab_ca_dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Pull GitLab Runner Docker image
+      docker_image:
+        name: "{{ gitlab_runner_image }}"
+        source: pull
+
+    - name: Run GitLab Runner container
+      docker_container:
+        name: "{{ gitlab_runner_container_name }}"
+        image: "{{ gitlab_runner_image }}"
+        state: started
+        restart_policy: always
+        volumes:
+          - "{{ gitlab_runner_config_dir }}:/etc/gitlab-runner"
+          - "/var/run/docker.sock:/var/run/docker.sock"
+        etc_hosts:
+          "gitlab.brizo.me" : "{{ gitlab_ip }}"
+      register: runner_container
+
+    - name: Register GitLab Runner (Docker executor)
+      command: >
+        docker exec {{ gitlab_runner_container_name }} gitlab-runner register
+        --non-interactive
+        --url {{ gitlab_url }}
+        --registration-token {{ gitlab_runner_token }}
+        --executor {{ gitlab_runner_executor }}
+        --docker-image {{ gitlab_runner_docker_image }}
+        --description "{{ gitlab_runner_description }}"
+        --tag-list "{{ gitlab_runner_tags }}"
+        --run-untagged="true"
+        --locked="false"
+        --tls-ca-file /etc/gitlab-runner/ssl/gitlab-brizo-ca.crt
+      args:
+        creates: "{{ gitlab_runner_config_dir }}/config.toml"
+      when: gitlab_runner_register

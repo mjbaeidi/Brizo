@@ -4,9 +4,32 @@ replicaCount: 1
 namespace:
   name: stage
 
+image:
+  repository: registry.okcs.com/containers-okcs/flask-apm-app
+  tag: v4.0.6
+
 ingress:
   host: stage.kuber.brizo.me
   
 resources: {}
 
 environment: stage
+
+deploymentStrategy:
+  maxUnavailable: 0 
+  maxSurge: 1
+
+probes:
+  readiness:
+    path: /hc
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+  liveness:
+    path: /hc
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
